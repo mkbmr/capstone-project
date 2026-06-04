@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import './App.css';
-import MaisonRegister from "./MaisonRegister";
-import MaisonLogin from "./MaisonLogin";
-import Footer from "./Footer";
-import MaisonConfigurator from "./MaisonConfigurator"; // Imported Selection Sidebar
-import MaisonAbout from "./MaisonAbout";               // Imported House Bio
-import { MAISON_AURA_PRODUCTS } from "./Products";     // 🌟 Imported Raw Data Array
-import MaisonSpecs from "./MaisonSpecs";               // Imported Measurement Specs Ledger
+import MaisonRegister from "../pages/MaisonRegister";
+import MaisonLogin from "../pages/MaisonLogin";
+import Footer from "../components/Footer";
+import MaisonConfigurator from "../pages/MaisonConfigurator"; // Imported Selection Sidebar
+import MaisonAbout from "../pages/MaisonAbout";               // Imported House Bio
+import { MAISON_AURA_PRODUCTS } from "../data/Products";     // 🌟 Imported Raw Data Array
+import MaisonSpecs from "../pages/MaisonSpecs";               // Imported Measurement Specs Ledger
 
 function App() {
   const [cart, setCart] = useState([]);
