@@ -1,11 +1,21 @@
 import React from "react";
 
-const ContactSupport = () => {
+// 1. Added { handleViewChange } to the props
+const ContactSupport = ({ handleViewChange }) => {
   return (
     <div className="contact-support-page">
       <div className="contact-support-card">
         <div className="login-eyebrow">Concierge Support</div>
         <h2 className="login-title">Contact Support</h2>
+        
+        {/* 2. Added a navigation trigger */}
+        <button 
+          className="lux-back-btn" 
+          onClick={() => handleViewChange("SHOP", "ALL")}
+        >
+          ← Return to Collections
+        </button>
+
         <div className="contact-support-intro">
           <p>For personalised assistance, send your enquiry directly to our concierge support team.</p>
           <p>We typically respond within one business hour.</p>

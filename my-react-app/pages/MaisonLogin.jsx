@@ -1,13 +1,37 @@
 import React, { useState } from "react";
 
-const MaisonLogin = ({ handleViewChange }) => {
+// Added onLoginSuccess to props
+const MaisonLogin = ({ handleViewChange, onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // placeholder: integrate real auth flow
-    alert(`Signing in as ${email}`);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Welcome back to Maison Aura.");
+        
+        // 1. Update global state in App.js
+        if (onLoginSuccess) onLoginSuccess();
+        
+        // 2. Redirect to Shop view
+        handleViewChange("SHOP", "ALL");
+      } else {
+        alert("Login failed: " + (data.error || "Check your credentials."));
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Could not reach the server.");
+    }
   };
 
   return (
@@ -37,26 +61,27 @@ const MaisonLogin = ({ handleViewChange }) => {
             required
           />
 
-             <div className="forgot-row">
-               <button className="forgot-password-link" onClick={(e) => e.preventDefault()}>Forgot password?</button>
-             </div>
-             <button type="submit" className="maison-login-btn">Sign In</button>
-           </form>
-           <div className="portal-footer-center">
-             <p>
-               New to the House?{' '}
-               <a
-                 href="#"
-                 className="create-account-link"
-                 onClick={(e) => {
-                   e.preventDefault();
-                   handleViewChange("REGISTER");
-                 }}
-               >
-                 Request Profile Allocation
-               </a>
-             </p>
-           </div>
+          <div className="forgot-row">
+            <button className="forgot-password-link" onClick={(e) => e.preventDefault()}>Forgot password?</button>
+          </div>
+          <button type="submit" className="maison-login-btn">Sign In</button>
+        </form>
+
+        <div className="portal-footer-center">
+          <p>
+            New to the House?{' '}
+            <a
+              href="#"
+              className="create-account-link"
+              onClick={(e) => {
+                e.preventDefault();
+                handleViewChange("REGISTER");
+              }}
+            >
+              Request Profile Allocation
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
