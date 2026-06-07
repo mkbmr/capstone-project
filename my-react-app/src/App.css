@@ -803,6 +803,7 @@ body {
   flex-direction: column;
   gap: 18px;
   text-align: left;
+  font-family: var(--sans);
 }
 
 .login-eyebrow {
@@ -810,6 +811,7 @@ body {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: #8b7351;
+  font-family: var(--sans);
 }
 
 .login-title {
@@ -817,6 +819,7 @@ body {
   font-size: 20px;
   font-weight: 600;
   color: #18212a;
+  font-family: var(--sans);
 }
 
 .login-form {
@@ -915,6 +918,7 @@ body {
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 30px 60px rgba(10,12,17,0.08);
+  text-align: left;
 }
 
 .contact-support-card h2 {
@@ -927,7 +931,7 @@ body {
 .contact-support-intro {
   margin-top: 16px;
   max-width: 840px;
-  text-align: center;
+  text-align: left;
 }
 
 .contact-support-intro p {
