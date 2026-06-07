@@ -7,7 +7,7 @@
   --text-grey: #4f4f4f;
   --border-muted: #e5e5e5;
   --accent-gold: #d4af37;
-  --footer-dark-bg: #0c0c0c; /* Ultra-deep premium off-black */
+  --footer-dark-bg: #0c0c0c;
   --footer-text-muted: #b0b0b0;
 }
 
@@ -163,7 +163,7 @@ body {
 .atelier-showcase-left {
   display: flex;
   flex-direction: column;
-  gap: 30px; 
+  gap: 30px;
   width: 100%;
 }
 
@@ -229,7 +229,6 @@ body {
   text-align: left;
 }
 
-/* 🏛️ UNDER-IMAGE LEDGER MODIFICATIONS */
 .atelier-measurements-middle {
   display: flex;
   flex-direction: column;
@@ -517,7 +516,7 @@ body {
 }
 
 .maison-specs-table tbody tr:not(.table-section-divider):hover {
-  background-color: #fdfcf7; 
+  background-color: #fdfcf7;
 }
 
 .specs-disclaimer {
@@ -666,7 +665,7 @@ body {
 }
 
 /* ==========================================================================
-   🛍️ CART WARDROBE DRAWER SYSTEM
+   🛍️ CART WARDROBE DRAWER SYSTEM — UPDATED
    ========================================================================== */
 
 .drawer-overlay {
@@ -680,14 +679,15 @@ body {
   z-index: 199;
 }
 
+/* ── Wider drawer ── */
 .maison-app-drawer {
   position: fixed;
   top: 0;
-  right: -450px;
-  width: 420px;
+  right: -650px;
+  width: 620px;
   height: 100vh;
   background-color: #ffffff;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -699,11 +699,12 @@ body {
 }
 
 .drawer-header {
-  padding: 30px;
+  padding: 30px 36px;
   border-bottom: 1px solid var(--border-muted);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .drawer-header h3 {
@@ -711,294 +712,6 @@ body {
   letter-spacing: 2px;
   margin: 0;
   font-weight: 500;
-}
-.maison-summary-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.maison-summary-item {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 6px 18px rgba(17,17,17,0.04);
-}
-.drawer-summary-item {
-  flex-direction: row;
-  align-items: flex-start;
-  padding: 14px;
-}
-.drawer-cart-img-holder {
-  width: 96px;
-  min-width: 96px;
-  height: 200px;
-  margin: 0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f6f6f6;
-}
-.drawer-cart-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-.drawer-summary-details {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-  flex: 1 1 auto;
-}
-.drawer-summary-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-.drawer-cart-no-image {
-  width: 100%;
-  height: 100%;
-  min-height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  font-size: 12px;
-  background: #f6f6f6;
-}
-.maison-summary-details {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.maison-summary-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-/* Premium Sign In styles */
-.maison-login-page {
-  display: flex;
-  justify-content: center;
-  padding: 60px 20px;
-}
-
-.maison-login-container {
-  width: 420px;
-  background: rgba(255,250,244,0.98);
-  border: 1px solid rgba(212,175,55,0.14);
-  border-radius: 20px;
-  padding: 36px;
-  box-shadow: 0 30px 60px rgba(10,12,17,0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  text-align: left;
-  font-family: var(--sans);
-}
-
-.login-eyebrow {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #8b7351;
-  font-family: var(--sans);
-}
-
-.login-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #18212a;
-  font-family: var(--sans);
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.lux-input {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: #fff;
-  font-size: 14px;
-  outline: none;
-}
-
-.lux-input:focus {
-  box-shadow: 0 6px 18px rgba(17,17,17,0.06);
-  border-color: rgba(212,175,55,0.24);
-}
-
-/* ensure typed text is visible */
-.lux-input {
-  color: #111111;
-}
-
-.lux-input::placeholder { color: #8b7f6a; }
-
-.maison-login-btn {
-  margin-top: 6px;
-  padding: 14px 18px;
-  border-radius: 12px;
-  border: none;
-  background: #11110f;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-
-.login-utility-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.portal-footer-links { text-align: right; }
-
-.create-account-link {
-  color: var(--accent-gold);
-  text-decoration: underline;
-  font-weight: 600;
-}
-
-.create-account-link:hover { opacity: 0.9; }
-
-.forgot-password-link {
-  background: none;
-  border: none;
-  color: #7f6f51;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 13px;
-  padding: 0;
-}
-
-.forgot-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 6px;
-  margin-bottom: 6px;
-}
-
-.portal-footer-center {
-  text-align: center;
-  margin-top: 12px;
-}
-
-.portal-footer-center p { margin: 0; }
-
-.contact-support-page {
-  display: flex;
-  justify-content: center;
-  padding: 60px 20px;
-}
-
-.contact-support-card {
-  width: min(100%, 1160px);
-  max-width: 1160px;
-  background: rgba(255,250,244,0.98);
-  border: 1px solid rgba(212,175,55,0.14);
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 30px 60px rgba(10,12,17,0.08);
-  text-align: left;
-}
-
-.contact-support-card h2 {
-  margin-top: 0;
-  font-size: 36px;
-  letter-spacing: 0.2px;
-  color: #18212a;
-}
-
-.contact-support-intro {
-  margin-top: 16px;
-  max-width: 840px;
-  text-align: left;
-}
-
-.contact-support-intro p {
-  margin: 0;
-  color: #4b4b4b;
-  line-height: 1.85;
-  font-size: 16px;
-}
-
-.contact-support-intro p + p {
-  margin-top: 12px;
-  font-weight: 500;
-}
-
-.contact-support-card p {
-  color: #4b4b4b;
-  line-height: 1.8;
-}
-
-.contact-support-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-top: 24px;
-}
-
-.contact-card {
-  padding: 24px;
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: #fff;
-}
-
-.contact-card h4 {
-  margin: 0 0 10px;
-  font-size: 18px;
-  color: #1f1b17;
-}
-
-.contact-card p {
-  margin: 0 0 14px;
-  color: #4b4b4b;
-  line-height: 1.75;
-}
-
-.contact-link {
-  color: #11110f;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.contact-link:hover {
-  opacity: 0.85;
-}
-
-.contact-note {
-  margin-top: 28px;
-  padding: 22px;
-  border-radius: 16px;
-  background: rgba(255,251,245,0.9);
-  border: 1px solid rgba(212,175,55,0.12);
-}
-
-.contact-note p {
-  margin: 0;
-  color: #4b4b4b;
-  line-height: 1.8;
 }
 
 .drawer-close-btn {
@@ -1013,51 +726,79 @@ body {
 .drawer-body {
   flex: 1;
   overflow-y: auto;
-  padding: 30px;
+  padding: 28px 36px;
 }
 
+/* ── Cart item row ── */
 .maison-summary-list {
   list-style: none;
-  padding: 0;
   margin: 0;
-}
-
-.maison-empty-text {
-  font-size: 12px;
-  color: var(--text-grey);
-  font-style: italic;
-  text-align: center;
-  margin-top: 40px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .maison-summary-item {
   display: flex;
-  justify-content: space-between;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #f9f9f9;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
+.maison-summary-item:first-child {
+  padding-top: 0;
+}
+
+/* ── Cart thumbnail ── */
+.maison-summary-thumb {
+  width: 130px;
+  min-width: 130px;
+  aspect-ratio: 255 / 512;
+  overflow: hidden;
+  background: #f6f6f6;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.maison-cart-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  background: #f6f6f6;
+}
+
+/* ── Item details ── */
 .maison-summary-details {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .maison-item-name {
-  font-size: 12px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--primary-dark);
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .maison-item-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-grey);
+  letter-spacing: 0.3px;
 }
 
 .maison-item-qty {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-grey);
 }
 
@@ -1066,11 +807,16 @@ body {
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
+  min-height: unset;          /* ← remove the fixed min-height */
+  align-self: stretch;        /* ← stretches to match the row height */
+  flex-shrink: 0;
 }
 
 .maison-item-price {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  white-space: nowrap;
 }
 
 .maison-item-del {
@@ -1081,12 +827,23 @@ body {
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
+  letter-spacing: 0.5px;
 }
 
+.maison-empty-text {
+  font-size: 12px;
+  color: var(--text-grey);
+  font-style: italic;
+  text-align: center;
+  margin-top: 60px;
+}
+
+/* ── Drawer footer ── */
 .drawer-footer {
-  padding: 30px;
+  padding: 28px 36px;
   border-top: 1px solid var(--border-muted);
   background-color: #fafafa;
+  flex-shrink: 0;
 }
 
 .maison-total-row {
@@ -1104,8 +861,9 @@ body {
 }
 
 .maison-total-price {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-dark);
 }
 
 .maison-checkout-btn {
@@ -1134,29 +892,27 @@ body {
    🖤 LUXURY HAUTE COUTURE FOOTER SYSTEM (BLACK EDITION)
    ========================================================================== */
 
-footer, 
+footer,
 .maison-footer {
   width: 100%;
-  margin-top: 100px; 
+  margin-top: 100px;
   border-top: 1px solid #1a1a1a;
-  background-color: var(--footer-dark-bg); /* Elegant dark palette */
+  background-color: var(--footer-dark-bg);
   box-sizing: border-box;
 }
 
-/* Enforces precise row parameters for 4 luxury metadata pillars */
 .footer-container,
 .maison-footer > div:first-child {
   max-width: 1440px;
   margin: 0 auto;
   padding: 100px 40px 60px 40px;
   display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important; 
+  grid-template-columns: repeat(4, 1fr) !important;
   gap: 40px;
   box-sizing: border-box;
   text-align: left !important;
 }
 
-/* Column block spacing adjustments */
 .footer-container div,
 .maison-footer > div:first-child > div {
   display: flex;
@@ -1165,27 +921,25 @@ footer,
   text-align: left;
 }
 
-/* Section Headings ('Collections', 'The House', 'Concierge' etc.) */
 .maison-footer h4,
 .maison-footer strong,
 .maison-footer div b {
   font-size: 11px;
   font-weight: 400;
-  letter-spacing: 3px; /* Extended track formatting */
+  letter-spacing: 3px;
   text-transform: uppercase;
   margin: 0 0 28px 0;
   display: block;
-  color: #ffffff; /* Bright premium pop */
+  color: #ffffff;
 }
 
-/* Global modifications for luxury links / inline options */
 .maison-footer ul,
 .maison-footer p,
 .maison-footer a {
   font-size: 11px;
   letter-spacing: 1px;
   color: var(--footer-text-muted);
-  line-height: 2; /* Clean vertical baseline spacing */
+  line-height: 2;
   margin: 0;
   text-decoration: none;
   list-style: none;
@@ -1193,7 +947,6 @@ footer,
   transition: color 0.3s ease;
 }
 
-/* Anchor links inside list layers */
 .maison-footer div ul li a,
 .maison-footer div p a {
   color: var(--footer-text-muted);
@@ -1202,16 +955,15 @@ footer,
 .maison-footer a:hover,
 .maison-footer div ul li a:hover,
 .maison-footer div p a:hover {
-  color: var(--accent-gold); /* Gold glow transition */
+  color: var(--accent-gold);
 }
 
-/* 🖤 FOOTER BOTTOM LINE PLATFORM BAR */
 .footer-bottom,
 .maison-footer > div:last-child {
   max-width: 1440px;
   margin: 40px auto 0 auto;
   padding: 40px 40px;
-  border-top: 1px solid #1a1a1a; /* Elegant low-contrast separator */
+  border-top: 1px solid #1a1a1a;
   display: flex !important;
   flex-direction: row !important;
   justify-content: space-between !important;
@@ -1221,7 +973,6 @@ footer,
   background-color: var(--footer-dark-bg);
 }
 
-/* Left Copyright segment styling */
 .footer-bottom p,
 .footer-bottom-bar p,
 .footer-copyright {
@@ -1230,7 +981,6 @@ footer,
   text-transform: uppercase;
 }
 
-/* Centered Privacy / Terms layout handling */
 .footer-legal-links,
 .footer-bottom-bar .footer-legal-links,
 .footer-bottom > div:nth-child(2) {
@@ -1259,12 +1009,11 @@ footer,
   color: var(--footer-text-muted);
 }
 
-/* Right Socials container adjustments */
 .footer-socials,
 .footer-bottom-bar .footer-socials,
 .footer-bottom > div:last-child {
   display: flex !important;
-  gap: 24px !important; /* Resolves squeezed textual rendering */
+  gap: 24px !important;
   flex-direction: row !important;
 }
 
@@ -1277,7 +1026,7 @@ footer,
 }
 
 /* ==========================================================================
-   �️ MAISON ABOUT SECTION
+   🗺️ MAISON ABOUT SECTION
    ========================================================================== */
 
 .maison-about-section {
@@ -1348,7 +1097,7 @@ footer,
 }
 
 .about-editorial-copy::before {
-  content: '“';
+  content: '"';
   position: absolute;
   left: 0;
   top: -8px;
@@ -1358,7 +1107,7 @@ footer,
 }
 
 .about-editorial-copy::after {
-  content: '”';
+  content: '"';
   position: absolute;
   right: 0;
   bottom: -10px;
@@ -1408,48 +1157,241 @@ footer,
   background-color: #333333;
 }
 
-@media (max-width: 980px) {
-  .maison-about-section {
-    grid-template-columns: 1fr;
-    padding: 40px 28px;
-  }
+/* ==========================================================================
+   🔐 LOGIN & REGISTER
+   ========================================================================== */
 
-  .about-hero-image {
-    max-width: 100%;
-  }
+.maison-login-page {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
 }
 
-@media (max-width: 680px) {
-  .maison-about-section {
-    padding: 40px 20px;
-  }
+.maison-login-container {
+  width: 420px;
+  background: rgba(255, 250, 244, 0.98);
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 30px 60px rgba(10, 12, 17, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
 
-  .about-editorial-content h3 {
-    font-size: 24px;
-  }
+.login-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7351;
+}
 
-  .signature-quote {
-    font-size: 20px;
-  }
+.login-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #18212a;
+}
 
-  .return-shop-btn {
-    width: 100%;
-    text-align: center;
-  }
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lux-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7a56;
+  margin-bottom: 6px;
+}
+
+.lux-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+  color: #111111;
+  box-sizing: border-box;
+}
+
+.lux-input:focus {
+  box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
+  border-color: rgba(212, 175, 55, 0.24);
+}
+
+.lux-input::placeholder {
+  color: #8b7f6a;
+}
+
+.maison-login-btn {
+  margin-top: 6px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: none;
+  background: #11110f;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #7f6f51;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.portal-footer-center {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.portal-footer-center p {
+  margin: 0;
+}
+
+.create-account-link {
+  color: var(--accent-gold);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.create-account-link:hover {
+  opacity: 0.9;
 }
 
 /* ==========================================================================
-   �🎬 ANIMATIONS & RESPONSIVE MEDIAS
+   📞 CONTACT SUPPORT
+   ========================================================================== */
+
+.contact-support-page {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.contact-support-card {
+  width: min(100%, 1160px);
+  max-width: 1160px;
+  background: rgba(255, 250, 244, 0.98);
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 30px 60px rgba(10, 12, 17, 0.08);
+  text-align: left;
+}
+
+.contact-support-card h2 {
+  margin-top: 0;
+  font-size: 36px;
+  letter-spacing: 0.2px;
+  color: #18212a;
+}
+
+.contact-support-intro {
+  margin-top: 16px;
+  max-width: 840px;
+  text-align: left;
+}
+
+.contact-support-intro p {
+  margin: 0;
+  color: #4b4b4b;
+  line-height: 1.85;
+  font-size: 16px;
+}
+
+.contact-support-intro p + p {
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.contact-support-card p {
+  color: #4b4b4b;
+  line-height: 1.8;
+}
+
+.contact-support-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.contact-card {
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.contact-card h4 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #1f1b17;
+}
+
+.contact-card p {
+  margin: 0 0 14px;
+  color: #4b4b4b;
+  line-height: 1.75;
+}
+
+.contact-link {
+  color: #11110f;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.contact-link:hover {
+  opacity: 0.85;
+}
+
+.contact-note {
+  margin-top: 28px;
+  padding: 22px;
+  border-radius: 16px;
+  background: rgba(255, 251, 245, 0.9);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.contact-note p {
+  margin: 0;
+  color: #4b4b4b;
+  line-height: 1.8;
+}
+
+/* ==========================================================================
+   🎬 ANIMATIONS
    ========================================================================== */
 
 @keyframes revealText {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .atelier-notice-box {
@@ -1482,21 +1424,24 @@ footer,
   animation: revealText 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-/* Responsive updates for stacked viewports */
+/* ==========================================================================
+   📱 RESPONSIVE
+   ========================================================================== */
+
 @media (max-width: 1220px) {
   .atelier-dual-workspace {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
     gap: 40px;
   }
-  
+
   .atelier-image-frame {
-    margin: 0 auto; 
+    margin: 0 auto;
   }
-  
+
   .lux-back-btn {
     align-self: center;
   }
-  
+
   .atelier-configurator-right {
     position: static;
     margin-top: 20px;
@@ -1515,7 +1460,7 @@ footer,
     text-align: center;
     padding: 40px 20px;
   }
-  
+
   .footer-legal-links,
   .footer-bottom > div:nth-child(2) {
     justify-content: center;
@@ -1527,16 +1472,57 @@ footer,
   }
 }
 
+@media (max-width: 980px) {
+  .maison-about-section {
+    grid-template-columns: 1fr;
+    padding: 40px 28px;
+  }
+
+  .about-hero-image {
+    max-width: 100%;
+  }
+
+  .specs-tables-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 680px) {
+  .maison-app-drawer {
+    width: 100vw;
+    right: -100vw;
+  }
+
   .footer-container,
   .maison-footer > div:first-child {
     grid-template-columns: 1fr !important;
     gap: 45px;
   }
-  
+
   .footer-legal-links,
   .footer-bottom > div:nth-child(2) {
     flex-direction: column !important;
     gap: 16px !important;
+  }
+
+  .maison-about-section {
+    padding: 40px 20px;
+  }
+
+  .about-editorial-content h3 {
+    font-size: 24px;
+  }
+
+  .signature-quote {
+    font-size: 20px;
+  }
+
+  .return-shop-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .contact-support-grid {
+    grid-template-columns: 1fr;
   }
 }
