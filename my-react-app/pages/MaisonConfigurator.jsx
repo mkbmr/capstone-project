@@ -60,8 +60,7 @@ const MaisonConfigurator = ({
               <select value={chestSize} onChange={(e) => setChestSize(e.target.value)} className="lux-select">
                 {/* 🌟 The Luxury Experience Options */}
                 <option value="Atelier Fitting">Private Atelier Fitting (Complimentary)</option>
-                <option value="Bespoke Dimensions">Submit Custom Measurements</option>
-                
+
                 {/* Standard Ready-To-Wear Options */}
                 <option value="38">38 (Ready-To-Wear)</option>
                 <option value="40">40 (Ready-To-Wear)</option>

@@ -38,7 +38,7 @@ const Footer = ({ handleViewChange }) => {
         <div className="footer-column">
           <h4>Concierge</h4>
           <ul>
-            <li><a href="#contact">Contact Support</a></li>
+            <li><a href="#contact" onClick={(e) => handleFooterNav(e, "CONTACT")}>Contact Support</a></li>
             <li><a href="#shipping">Delivery & Returns</a></li>
             <li><a href="#care">Garment Care</a></li>
           </ul>

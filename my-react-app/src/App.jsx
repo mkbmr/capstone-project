@@ -5,6 +5,7 @@ import MaisonLogin from "../pages/MaisonLogin";
 import Footer from "../components/Footer";
 import MaisonConfigurator from "../pages/MaisonConfigurator"; // Imported Selection Sidebar
 import MaisonAbout from "../pages/MaisonAbout";               // Imported House Bio
+import ContactSupport from "../pages/ContactSupport";
 import { MAISON_AURA_PRODUCTS } from "../data/Products";     // 🌟 Imported Raw Data Array
 import MaisonSpecs from "../pages/MaisonSpecs";               // Imported Measurement Specs Ledger
 
@@ -185,6 +186,9 @@ function App() {
         {/* VIEW 4: ATELIER REGISTRATION REGISTRY MOUNT */}
         {currentView === "REGISTER" && <MaisonRegister />}
 
+        {/* VIEW 5: CONTACT SUPPORT PLATFORM */}
+        {currentView === "CONTACT" && <ContactSupport />}
+
       </main>
 
       <Footer handleViewChange={handleViewChange} />
@@ -201,19 +205,29 @@ function App() {
             {cart.length === 0 ? (
               <li className="maison-empty-text">Your private wardrobe trunk is empty.</li>
             ) : (
-              cart.map((item) => (
-                <li key={item.id} className="maison-summary-item">
-                  <div className="maison-summary-details">
-                    <span className="maison-item-name">{item.name}</span>
-                    <span className="maison-item-meta">{item.color} / {item.cut} / Size {item.size}</span>
-                    <span className="maison-item-qty">Quantity: {item.quantity}</span>
-                  </div>
-                  <div className="maison-summary-actions">
-                    <span className="maison-item-price">${(item.price * item.quantity).toLocaleString('en-US')}</span>
-                    <button className="maison-item-del" onClick={() => removeFromCart(item.id)}>Remove</button>
-                  </div>
-                </li>
-              ))
+              cart.map((item) => {
+                const product = MAISON_AURA_PRODUCTS.find(p => p.id === item.baseId) || {};
+                return (
+                  <li key={item.id} className="maison-summary-item">
+                    <div className="maison-summary-thumb">
+                      {product.image && (
+                        <img src={product.image} alt={product.name || item.name} className="maison-cart-thumb" />
+                      )}
+                    </div>
+
+                    <div className="maison-summary-details">
+                      <span className="maison-item-name">{item.name}</span>
+                      <span className="maison-item-meta">{item.color} / {item.cut} / Size {item.size}</span>
+                      <span className="maison-item-qty">Quantity: {item.quantity}</span>
+                    </div>
+
+                    <div className="maison-summary-actions">
+                      <span className="maison-item-price">${(item.price * item.quantity).toLocaleString('en-US')}</span>
+                      <button className="maison-item-del" onClick={() => removeFromCart(item.id)}>Remove</button>
+                    </div>
+                  </li>
+                );
+              })
             )}
           </ul>
         </div>
