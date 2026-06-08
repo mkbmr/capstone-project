@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import MaisonRegister from "../pages/MaisonRegister";
 import MaisonLogin from "../pages/MaisonLogin";
@@ -8,6 +8,7 @@ import MaisonAbout from "../pages/MaisonAbout";
 import ContactSupport from "../pages/ContactSupport";
 import { useProducts } from "../components/Products";   // ← updated path
 import MaisonSpecs from "../pages/MaisonSpecs";
+import CheckoutSuccess from "../pages/CheckoutSuccess";
 
 function App() {
   const { products, loading, error } = useProducts();   // ← fetch from API
@@ -26,6 +27,39 @@ function App() {
     setIsLoggedIn(true);
     setCurrentView("SHOP");
   };
+
+  const handleCheckout = async () => {
+
+    if (!isLoggedIn) {
+      setIsDrawerOpen(false);
+      handleViewChange("LOGIN");
+      return;
+  }
+  
+  try {
+    const response = await fetch('http://localhost:5000/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cartItems: cart }),
+    });
+    const data = await response.json();
+    if (data.url) {
+      window.location.href = data.url; // redirect to Stripe
+    }
+  } catch (err) {
+    alert('Checkout failed. Please try again.');
+  }
+};
+
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('view') === 'SUCCESS') {
+    setCurrentView('SUCCESS');
+    setCart([]);
+    // Clean the URL
+    window.history.replaceState({}, '', '/');
+  }
+}, []);
 
   // ← now uses `products` instead of MAISON_AURA_PRODUCTS
   const filteredProducts = (filter === "ALL"
@@ -215,6 +249,7 @@ function App() {
         {currentView === "LOGIN" && <MaisonLogin handleViewChange={handleViewChange} onLoginSuccess={handleLoginSuccess} />}
         {currentView === "REGISTER" && <MaisonRegister handleViewChange={handleViewChange} />}
         {currentView === "CONTACT" && <ContactSupport handleViewChange={handleViewChange} />}
+        {currentView === "SUCCESS" && <CheckoutSuccess handleViewChange={handleViewChange} />}
       </main>
 
       <Footer handleViewChange={handleViewChange} />
@@ -262,9 +297,13 @@ function App() {
             <span>Estimated Value</span>
             <span className="maison-total-price">${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
-          <button className="maison-checkout-btn" disabled={cart.length === 0} onClick={() => { alert('Initiating secure check out...'); setCart([]); setIsDrawerOpen(false); }}>
+          <button
+            className="maison-checkout-btn"
+            disabled={cart.length === 0}
+            onClick={handleCheckout}
+            >
             PROCEED TO ACQUISITION
-          </button>
+            </button>
         </div>
       </div>
 
