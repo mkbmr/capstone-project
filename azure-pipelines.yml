@@ -9,7 +9,7 @@ variables:
     value: $(Build.BuildId)
 
 pool:
-  vmImage: ubuntu-latest
+  name: Bazooka-Desktop
 
 # ── Variable group (maison-aura-vars) must contain: ──────────────────────────
 # AZURE_SERVICE_CONNECTION  — Azure DevOps service connection name
