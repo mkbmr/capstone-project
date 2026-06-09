@@ -9,7 +9,7 @@ variables:
     value: $(Build.BuildId)
 
 pool:
-  vmImage: ubuntu-latest
+  name: Bazooka-Desktop
 
 # ── Variable group (maison-aura-vars) must contain: ──────────────────────────
 # AZURE_SERVICE_CONNECTION  — Azure DevOps service connection name
@@ -51,17 +51,17 @@ stages:
       - job: IaCScan
         displayName: Checkov IaC security scan
         steps:
-          - script: pip install checkov
+          - script: pip install checkov --break-system-packages
             displayName: Install Checkov
 
           - script: |
               echo "=== Terraform scan ==="
-              checkov -d infra/terraform --soft-fail --compact
+              python -m checkov -d infra/terraform --soft-fail --compact
             displayName: Scan Terraform
 
           - script: |
               echo "=== Kubernetes manifests scan ==="
-              checkov -d infra/k8s --soft-fail --compact
+              python -m checkov -d infra/k8s --soft-fail --compact
             displayName: Scan K8s manifests
 
 # ── Stage 2: Build & Image Scan ───────────────────────────────────────────────
