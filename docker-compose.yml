@@ -1,0 +1,16 @@
+services:
+  api:
+    build: ./my-api
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./my-api/.env
+    restart: unless-stopped
+
+  frontend:
+    build: ./my-react-app
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped

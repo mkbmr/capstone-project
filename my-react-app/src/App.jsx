@@ -6,9 +6,10 @@ import Footer from "../components/Footer";
 import MaisonConfigurator from "../pages/MaisonConfigurator";
 import MaisonAbout from "../pages/MaisonAbout";
 import ContactSupport from "../pages/ContactSupport";
-import { useProducts } from "../components/Products";   // ← updated path
+import { useProducts } from "../components/Products";
 import MaisonSpecs from "../pages/MaisonSpecs";
 import CheckoutSuccess from "../pages/CheckoutSuccess";
+import AdminDashboard from "../pages/AdminDashboard";
 
 function App() {
   const { products, loading, error } = useProducts();   // ← fetch from API
@@ -21,10 +22,24 @@ function App() {
   const [sartorialCut, setSartorialCut] = useState("Regular");
   const [fabricColor, setFabricColor] = useState("Midnight Noir");
   const [chestSize, setChestSize] = useState("40");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('isLoggedIn') === 'true');
+  const [adminToken, setAdminToken] = useState(() => localStorage.getItem('adminToken'));
+
+  const handleAdminLogin = (token) => {
+    setAdminToken(token);
+    localStorage.setItem('adminToken', token);
+    setCurrentView('ADMIN');
+  };
+
+  const handleAdminLogout = () => {
+    setAdminToken(null);
+    localStorage.removeItem('adminToken');
+    handleViewChange('SHOP', 'ALL');
+  };
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
+    sessionStorage.setItem('isLoggedIn', 'true');
     setCurrentView("SHOP");
   };
 
@@ -37,7 +52,7 @@ function App() {
   }
   
   try {
-    const response = await fetch('http://localhost:5000/api/checkout', {
+    const response = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cartItems: cart }),
@@ -52,11 +67,15 @@ function App() {
 };
 
 useEffect(() => {
+  if (window.location.pathname.startsWith('/admin')) {
+    setCurrentView('ADMIN');
+    window.history.replaceState({}, '', '/');
+    return;
+  }
   const params = new URLSearchParams(window.location.search);
   if (params.get('view') === 'SUCCESS') {
     setCurrentView('SUCCESS');
     setCart([]);
-    // Clean the URL
     window.history.replaceState({}, '', '/');
   }
 }, []);
@@ -118,6 +137,17 @@ useEffect(() => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
   };
 
+  if (currentView === 'ADMIN') {
+    return (
+      <AdminDashboard
+        adminToken={adminToken}
+        onAdminLogin={handleAdminLogin}
+        onAdminLogout={handleAdminLogout}
+        handleViewChange={handleViewChange}
+      />
+    );
+  }
+
   return (
     <div className="maison-app">
       {isDrawerOpen && <div className="drawer-overlay" onClick={() => setIsDrawerOpen(false)}></div>}
@@ -144,11 +174,17 @@ useEffect(() => {
           </a>
 
           <div className="maison-right-menu">
+            {adminToken && (
+              <button className="maison-utility-btn" onClick={() => setCurrentView('ADMIN')}>
+                Admin
+              </button>
+            )}
             {isLoggedIn ? (
         <button
             className="maison-utility-btn"
             onClick={() => {
             setIsLoggedIn(false);
+            sessionStorage.removeItem('isLoggedIn');
             handleViewChange("SHOP", "ALL");
             }}
         >

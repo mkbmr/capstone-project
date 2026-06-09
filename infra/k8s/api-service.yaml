@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: maison-aura-api
+  namespace: maison-aura
+spec:
+  selector:
+    app: maison-aura-api
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: ClusterIP

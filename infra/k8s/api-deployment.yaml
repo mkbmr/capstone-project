@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maison-aura-api
+  namespace: maison-aura
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: maison-aura-api
+  template:
+    metadata:
+      labels:
+        app: maison-aura-api
+    spec:
+      containers:
+        - name: api
+          image: __ACR_LOGIN_SERVER__/maison-aura-api:__BUILD_ID__
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: maison-aura-api-secrets
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /api/products
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/products
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: maison-aura-secrets

@@ -15,11 +15,21 @@ node_modules/
 config.js
 config.json
 
+# --- Claude Code ---
+CLAUDE.md
+
 # --- Editor & OS Files ---
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+
+# --- Terraform ---
+infra/terraform/.terraform/
+infra/terraform/terraform.tfvars
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.tfplan
 
 # --- Logs ---
 *.log
