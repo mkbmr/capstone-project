@@ -30,7 +30,7 @@ stages:
       - job: DependencyAudit
         displayName: npm audit (frontend + backend)
         steps:
-          - task: NodeTool@0
+          - task: UseNodeV1@1
             inputs:
               versionSpec: '20.x'
 
