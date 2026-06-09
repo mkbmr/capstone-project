@@ -408,26 +408,44 @@ kubectl get ingress -n maison-aura   # shows the external IP
 ```
 
 ### Step 6 — Azure DevOps Pipeline
-Automates steps 1–5 on every push to `main`.
+Automates build, scan, and deploy on every push to `main`. **Not configured by Terraform — requires manual setup.**
 
-1. Create a variable group named `maison-aura-vars` in Azure DevOps → Pipelines → Library with these variables:
+#### 6a — Create a Service Connection
+1. Go to [dev.azure.com](https://dev.azure.com) → open your project
+2. **Project Settings** → **Service Connections** → **New service connection**
+3. Select **Azure Resource Manager** → click **Next**
+4. Configure the form:
+   - **Identity type:** App registration (automatic)
+   - **Credential:** Workload identity federation
+   - **Scope level:** Subscription
+   - **Subscription:** Azure subscription 1 (3559b164...)
+   - **Resource group:** `maisonaura-rg` — select this specifically, not `MC_maisonaura-rg_*` (AKS internal) or `NetworkWatcherRG` (Azure auto-created)
+   - **Service Connection Name:** `maison-aura-sc`
+   - **Security:** tick **Grant access permission to all pipelines**
+5. Click **Save**
+
+#### 6b — Create the Variable Group
+**Pipelines → Library → + Variable group** — name it exactly `maison-aura-vars`:
 
 | Variable | Value |
 |---|---|
-| `AZURE_SERVICE_CONNECTION` | your service connection name |
+| `AZURE_SERVICE_CONNECTION` | name from step 6a |
 | `ACR_NAME` | `maisonauraacr` |
-| `AKS_RESOURCE_GROUP` | `maison-aura-rg` |
+| `AKS_RESOURCE_GROUP` | `maisonaura-rg` |
 | `AKS_CLUSTER_NAME` | `maison-aura-aks` |
 | `KEY_VAULT_NAME` | `maisonaura-kv` |
 | `TENANT_ID` | from `terraform output tenant_id` |
 | `KEYVAULT_CLIENT_ID` | from `terraform output keyvault_client_id` |
 
-2. Create a new pipeline in Azure DevOps pointing to `azure-pipelines.yml` in this repo.
+#### 6c — Create the Pipeline
+1. **Pipelines** → **New Pipeline** → **Azure Repos Git** → select this repo
+2. Select **Existing Azure Pipelines YAML file**
+3. Path: `/azure-pipelines.yml` → **Continue** → **Run**
 
 **Pipeline stages:**
 - **SecurityScan** — `npm audit` on both packages + Checkov on Terraform and K8s manifests
-- **Build** — builds both Docker images, Trivy scans for HIGH/CRITICAL CVEs, pushes to ACR
-- **Deploy** — applies K8s manifests to AKS, waits for rollout, prints external IP
+- **Build** — builds both Docker images, Trivy scans for HIGH/CRITICAL CVEs, pushes to ACR tagged with `$(Build.BuildId)`
+- **Deploy** — substitutes `__PLACEHOLDER__` values in K8s manifests, applies to AKS, waits for rollout, prints external IP
 
 ---
 
