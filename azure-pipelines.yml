@@ -9,7 +9,7 @@ variables:
     value: $(Build.BuildId)
 
 pool:
-  name: Bazooka-Desktop
+  vmImage: ubuntu-latest
 
 # ── Variable group (maison-aura-vars) must contain: ──────────────────────────
 # AZURE_SERVICE_CONNECTION  — Azure DevOps service connection name
@@ -51,7 +51,7 @@ stages:
       - job: IaCScan
         displayName: Checkov IaC security scan
         steps:
-          - script: pip install checkov --break-system-packages
+          - script: pip install checkov
             displayName: Install Checkov
 
           - script: |
