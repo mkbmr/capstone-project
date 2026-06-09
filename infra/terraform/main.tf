@@ -27,18 +27,18 @@ provider "azurerm" {
 data "azurerm_client_config" "current" {}
 
 # ── Resource Group ────────────────────────────────────────────────────────────
+# Read the existing RG — Terraform will not create or delete it.
 
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
-  location = var.location
+data "azurerm_resource_group" "rg" {
+  name = var.resource_group_name
 }
 
 # ── Azure Container Registry ──────────────────────────────────────────────────
 
 resource "azurerm_container_registry" "acr" {
   name                = var.acr_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
   sku                 = "Basic"
   admin_enabled       = false
 }
@@ -47,8 +47,8 @@ resource "azurerm_container_registry" "acr" {
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_cluster_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
   dns_prefix          = var.aks_cluster_name
 
   default_node_pool {
@@ -83,8 +83,8 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
 
 resource "azurerm_key_vault" "kv" {
   name                = var.key_vault_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
 
