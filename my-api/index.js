@@ -551,8 +551,8 @@ app.post('/api/checkout', async (req, res) => {
         quantity: item.quantity,
       })),
 
-      success_url: 'http://localhost:5173/?view=SUCCESS',
-      cancel_url:  'http://localhost:5173/',
+      success_url: `${process.env.APP_URL || 'http://localhost:5173'}/?view=SUCCESS`,
+      cancel_url:  `${process.env.APP_URL || 'http://localhost:5173'}/`,
     });
 
     res.json({ url: session.url });
@@ -562,6 +562,18 @@ app.post('/api/checkout', async (req, res) => {
 });
 
 // Get all products
+app.get('/api/products/:id/variants', async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('id', sql.Int, parseInt(req.params.id))
+      .query('SELECT * FROM ProductVariants WHERE product_id = @id ORDER BY size, color');
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/products', async (req, res) => {
   try {
     const pool = await poolPromise;

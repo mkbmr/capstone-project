@@ -2009,6 +2009,7 @@ footer,
   border-radius: 8px;
   font-size: 13px;
   color: #111;
+  background: #fff;
   outline: none;
   width: 260px;
   transition: border-color 0.15s;

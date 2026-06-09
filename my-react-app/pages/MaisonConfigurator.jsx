@@ -1,17 +1,27 @@
 import React from 'react';
 
-const MaisonConfigurator = ({ 
-  selectedProduct, 
-  sartorialCut, 
-  setSartorialCut, 
+const MaisonConfigurator = ({
+  selectedProduct,
+  variants = [],
+  sartorialCut,
+  setSartorialCut,
   fabricColor,
-  setFabricColor, 
-  chestSize, 
-  setChestSize, 
-  addToCart 
+  setFabricColor,
+  chestSize,
+  setChestSize,
+  addToCart
 }) => {
   const isAtelierFitting = chestSize === "Atelier Fitting";
   const isBespoke = isAtelierFitting || chestSize === "Bespoke Dimensions";
+
+  const colorOptions = [...new Set(variants.map(v => v.color).filter(Boolean))];
+
+  const sizeMap = {};
+  variants.forEach(v => {
+    if (!v.size) return;
+    sizeMap[v.size] = (sizeMap[v.size] || 0) + v.stock_quantity;
+  });
+  const sizeOptions = Object.entries(sizeMap);
 
   return (
     <aside id="sartorial-configurator" className="maison-configurator-panel animated-reveal">
@@ -21,13 +31,10 @@ const MaisonConfigurator = ({
         <p className="config-product-price">
           ${selectedProduct.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </p>
-        
+
         <div className="config-divider"></div>
-        <p 
-        className="config-description-text" 
-        style={{ textAlign: 'left' }} // 🌟 Add this exact style attribute
-        >
-        {selectedProduct.description}
+        <p className="config-description-text" style={{ textAlign: 'left' }}>
+          {selectedProduct.description}
         </p>
         <div className="config-divider"></div>
 
@@ -47,9 +54,13 @@ const MaisonConfigurator = ({
             <label className="lux-label">Fabric Colorway</label>
             <div className="custom-select-wrapper">
               <select value={fabricColor} onChange={(e) => setFabricColor(e.target.value)} className="lux-select">
-                <option value="Midnight Noir">Midnight Noir</option>
-                <option value="Atelier Charcoal">Atelier Charcoal</option>
-                <option value="Imperial Navy">Imperial Navy</option>
+                {colorOptions.length > 0 ? (
+                  colorOptions.map(color => (
+                    <option key={color} value={color}>{color}</option>
+                  ))
+                ) : (
+                  <option value="">No colors available</option>
+                )}
               </select>
             </div>
           </div>
@@ -58,14 +69,15 @@ const MaisonConfigurator = ({
             <label className="lux-label">Chest Size / Fitting Service</label>
             <div className="custom-select-wrapper">
               <select value={chestSize} onChange={(e) => setChestSize(e.target.value)} className="lux-select">
-                {/* 🌟 The Luxury Experience Options */}
                 <option value="Atelier Fitting">Private Atelier Fitting (Complimentary)</option>
-
-                {/* Standard Ready-To-Wear Options */}
-                <option value="38">38 (Ready-To-Wear)</option>
-                <option value="40">40 (Ready-To-Wear)</option>
-                <option value="42">42 (Ready-To-Wear)</option>
-                <option value="44">44 (Ready-To-Wear)</option>
+                {sizeOptions.map(([size, stock]) => (
+                  <option key={size} value={size}>
+                    {size} (Ready-To-Wear) — {stock} in stock
+                  </option>
+                ))}
+                {sizeOptions.length === 0 && (
+                  <option value="" disabled>No sizes available</option>
+                )}
               </select>
             </div>
           </div>
@@ -77,7 +89,6 @@ const MaisonConfigurator = ({
               </p>
             </div>
           )}
-
         </div>
 
         <button className="maison-add-btn-primary" onClick={addToCart} style={{ marginTop: '20px' }}>

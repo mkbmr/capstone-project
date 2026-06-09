@@ -19,11 +19,26 @@ function App() {
   const [currentView, setCurrentView] = useState("SHOP");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productVariants, setProductVariants] = useState([]);
   const [sartorialCut, setSartorialCut] = useState("Regular");
-  const [fabricColor, setFabricColor] = useState("Midnight Noir");
-  const [chestSize, setChestSize] = useState("40");
+  const [fabricColor, setFabricColor] = useState("");
+  const [chestSize, setChestSize] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('isLoggedIn') === 'true');
   const [adminToken, setAdminToken] = useState(() => localStorage.getItem('adminToken'));
+
+  useEffect(() => {
+    if (!selectedProduct) { setProductVariants([]); return; }
+    fetch(`/api/products/${selectedProduct.id}/variants`)
+      .then(r => r.json())
+      .then(variants => {
+        setProductVariants(variants);
+        const firstColor = variants[0]?.color || '';
+        const firstSize = variants[0]?.size || '';
+        setFabricColor(firstColor);
+        setChestSize(firstSize);
+      })
+      .catch(() => setProductVariants([]));
+  }, [selectedProduct]);
 
   const handleAdminLogin = (token) => {
     setAdminToken(token);
@@ -238,6 +253,7 @@ useEffect(() => {
               <div className="atelier-configurator-right">
                 <MaisonConfigurator
                   selectedProduct={selectedProduct}
+                  variants={productVariants}
                   sartorialCut={sartorialCut}
                   setSartorialCut={setSartorialCut}
                   fabricColor={fabricColor}

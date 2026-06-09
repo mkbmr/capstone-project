@@ -324,16 +324,23 @@ Creates the ACR, AKS cluster, and Key Vault.
 **Prerequisites:** [Terraform](https://developer.hashicorp.com/terraform/install) and [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
 ```bash
-az login
+az login --tenant <your-tenant-id>
 
 cd infra/terraform
 cp terraform.tfvars.example terraform.tfvars
 # Fill in all secret values in terraform.tfvars
+# node_vm_size must be Standard_D2s_v3 (B-series has zero quota in this subscription)
+# Set app_url to your public IP or domain, e.g. http://20.197.74.212
 
 terraform init
 terraform plan
 terraform apply
 ```
+
+> **Notes:**
+> - The resource group `maisonaura-rg` is pre-existing (contains the SQL database) and is referenced as a Terraform `data` source — it will never be created or destroyed by Terraform. All new resources (ACR, AKS, Key Vault) deploy to `southeastasia`.
+> - `APP_URL` is required for Stripe to redirect back to the correct URL after payment. Set it to your public IP or custom domain.
+> - If the public IP changes after a redeploy, update `app_url` in `terraform.tfvars` and re-run `terraform apply`.
 
 Save the outputs — you'll need them in later steps:
 ```bash

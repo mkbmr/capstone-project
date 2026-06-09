@@ -21,11 +21,11 @@ variable "key_vault_name" {
 }
 
 variable "node_count" {
-  default = 2
+  default = 1
 }
 
 variable "node_vm_size" {
-  default = "Standard_B2s"
+  default = "Standard_D2s_v3"
 }
 
 variable "stripe_secret_key" {
@@ -61,3 +61,8 @@ variable "azure_storage_connection_string" {
 }
 
 variable "azure_storage_container" {}
+
+variable "app_url" {
+  description = "Public URL of the app — used for Stripe success/cancel redirect URLs"
+  default     = ""
+}

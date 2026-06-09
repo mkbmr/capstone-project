@@ -239,10 +239,12 @@ function OverviewTab({ token }) {
         <div className="chart-card-header">
           <div>
             <h3 className="chart-title">Orders — Last 30 Days</h3>
-            <p className="chart-sub">Number of orders per day</p>
+            <p className="chart-sub">
+              {trend.reduce((s, d) => s + (d.order_count || 0), 0)} total orders in the last 30 days
+            </p>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={320}>
           <BarChart data={trend} margin={{ top: 10, right: 24, left: 10, bottom: 0 }}>
             <CartesianGrid stroke="#f0f0f0" vertical={false} />
             <XAxis
@@ -288,6 +290,8 @@ function OverviewTab({ token }) {
           Stock data will appear here once your inventory variants are set up in ProductVariants.
         </p>
       ) : (
+        <>
+        <h3 className="admin-section-subtitle">Stock Checking</h3>
         <div className="chart-card" style={{ marginBottom: 40 }}>
           <div style={{ display: 'flex', gap: 12, padding: '16px 16px 0', flexWrap: 'wrap' }}>
             <input
@@ -311,7 +315,7 @@ function OverviewTab({ token }) {
               <option value="product">Sort by Product</option>
             </select>
           </div>
-          <div className="admin-table-wrap">
+          <div className="admin-table-wrap" style={{ marginTop: 16 }}>
             {filteredStock.length === 0 ? (
               <p className="admin-empty-note" style={{ padding: 16 }}>No variants match your filters.</p>
             ) : (
@@ -339,6 +343,7 @@ function OverviewTab({ token }) {
             )}
           </div>
         </div>
+        </>
       )}
 
       {/* ── Top Selling Items ── */}
@@ -349,32 +354,6 @@ function OverviewTab({ token }) {
         </p>
       ) : (
         <>
-          <div className="chart-card" style={{ marginBottom: 24 }}>
-            <div className="chart-card-header">
-              <div>
-                <h3 className="chart-title">Units Sold by Product</h3>
-                <p className="chart-sub">Top selling configurations</p>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={Math.max(200, topItems.slice(0,10).length * 36)}>
-              <BarChart
-                layout="vertical"
-                data={topItems.slice(0, 10).map(it => ({
-                  label: `${it.product_name} ${it.size || ''}`.trim(),
-                  units: it.total_quantity,
-                  revenue: Number(it.total_revenue),
-                }))}
-                margin={{ top: 0, right: 24, left: 8, bottom: 0 }}
-              >
-                <CartesianGrid stroke="#f0f0f0" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10, fill: '#aaa' }} tickLine={false} axisLine={false} allowDecimals={false} />
-                <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: '#444' }} tickLine={false} width={160} />
-                <Tooltip formatter={(v, name) => name === 'units' ? [`${v} units`, 'Sold'] : [`$${fmtMoney(v)}`, 'Revenue']} />
-                <Bar dataKey="units" fill="#d4af37" radius={[0, 4, 4, 0]} maxBarSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>

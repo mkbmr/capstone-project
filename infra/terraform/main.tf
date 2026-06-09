@@ -22,6 +22,9 @@ provider "azurerm" {
       recover_soft_deleted_key_vaults = true
     }
   }
+
+  subscription_id = "3559b164-0ccc-4715-91dd-bf1cb7723ca2"
+  tenant_id       = "6ef653bc-0627-441c-900e-6b1dd1105de3"
 }
 
 data "azurerm_client_config" "current" {}
@@ -38,7 +41,7 @@ data "azurerm_resource_group" "rg" {
 resource "azurerm_container_registry" "acr" {
   name                = var.acr_name
   resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   sku                 = "Basic"
   admin_enabled       = false
 }
@@ -47,7 +50,7 @@ resource "azurerm_container_registry" "acr" {
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_cluster_name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
   dns_prefix          = var.aks_cluster_name
 
@@ -56,6 +59,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
     node_count = var.node_count
     vm_size    = var.node_vm_size
   }
+
+  oidc_issuer_enabled = true
 
   identity {
     type = "SystemAssigned"
@@ -83,7 +88,7 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
 
 resource "azurerm_key_vault" "kv" {
   name                = var.key_vault_name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
@@ -120,6 +125,7 @@ locals {
     ADMIN-SECRET                    = var.admin_secret
     AZURE-STORAGE-CONNECTION-STRING = var.azure_storage_connection_string
     AZURE-STORAGE-CONTAINER         = var.azure_storage_container
+    APP-URL                         = var.app_url
   }
 }
 
