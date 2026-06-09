@@ -51,7 +51,7 @@ stages:
       - job: IaCScan
         displayName: Checkov IaC security scan
         steps:
-          - script: pip install checkov
+          - script: pip install checkov --break-system-packages
             displayName: Install Checkov
 
           - script: |
