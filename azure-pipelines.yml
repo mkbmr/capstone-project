@@ -4,22 +4,12 @@ trigger:
       - main
 
 variables:
-  - group: maison-aura-vars   # Create this variable group in Azure DevOps (see setup notes below)
+  - group: maison-aura-vars
   - name: imageTag
     value: $(Build.BuildId)
 
 pool:
   name: Bazooka-Desktop
-
-# ── Variable group (maison-aura-vars) must contain: ──────────────────────────
-# AZURE_SERVICE_CONNECTION  — Azure DevOps service connection name
-# ACR_NAME                  — e.g. maisonauraacr
-# AKS_RESOURCE_GROUP        — e.g. maison-aura-rg
-# AKS_CLUSTER_NAME          — e.g. maison-aura-aks
-# KEY_VAULT_NAME            — e.g. maisonaura-kv
-# TENANT_ID                 — Azure AD tenant ID (from: az account show)
-# KEYVAULT_CLIENT_ID        — output from: terraform output keyvault_client_id
-# ─────────────────────────────────────────────────────────────────────────────
 
 stages:
 
@@ -30,10 +20,6 @@ stages:
       - job: DependencyAudit
         displayName: npm audit (frontend + backend)
         steps:
-          - task: NodeTool@1
-            inputs:
-              versionSpec: '20.x'
-
           - script: |
               echo "=== Backend dependency audit ==="
               cd my-api
@@ -55,13 +41,15 @@ stages:
             displayName: Install Checkov
 
           - script: |
+              export PATH=$HOME/.local/bin:$PATH
               echo "=== Terraform scan ==="
-              python3 -m checkov -d infra/terraform --soft-fail --compact
+              checkov -d infra/terraform --soft-fail --compact
             displayName: Scan Terraform
 
           - script: |
+              export PATH=$HOME/.local/bin:$PATH
               echo "=== Kubernetes manifests scan ==="
-              python3 -m checkov -d infra/k8s --soft-fail --compact
+              checkov -d infra/k8s --soft-fail --compact
             displayName: Scan K8s manifests
 
 # ── Stage 2: Build & Image Scan ───────────────────────────────────────────────
@@ -96,7 +84,8 @@ stages:
             displayName: Build Frontend image (AKS nginx config)
 
           - script: |
-              curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+              export PATH=$HOME/.local/bin:$PATH
+              curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/.local/bin
               echo "=== Scanning API image ==="
               trivy image --exit-code 1 --severity HIGH,CRITICAL \
                 --no-progress $(ACR_LOGIN_SERVER)/maison-aura-api:$(imageTag)
@@ -157,7 +146,6 @@ stages:
                         --wait
 
                 - script: |
-                    # Substitute placeholders in manifests
                     sed -i "s|__ACR_LOGIN_SERVER__|$(ACR_LOGIN_SERVER)|g" infra/k8s/*.yaml
                     sed -i "s|__BUILD_ID__|$(imageTag)|g"                 infra/k8s/*.yaml
                     sed -i "s|__KEY_VAULT_NAME__|$(KEY_VAULT_NAME)|g"     infra/k8s/*.yaml
