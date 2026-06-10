@@ -1,6 +1,8 @@
 require('dotenv').config(); // ← MUST be first line
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const sql = require('mssql');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
@@ -119,8 +121,17 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 });
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many attempts, please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Initialize SQL Connection Pool
 const poolPromise = new sql.ConnectionPool({
@@ -147,8 +158,9 @@ function requireAdmin(req, res, next) {
 }
 
 // ─── Admin: Login ─────────────────────────────────────────────────────────────
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', loginLimiter, (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
   if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
     res.json({ token: process.env.ADMIN_SECRET });
   } else {
@@ -547,6 +559,7 @@ app.put('/api/admin/atelier/:itemId', requireAdmin, async (req, res) => {
 // Checkout
 app.post('/api/checkout', async (req, res) => {
   const { cartItems } = req.body;
+  if (!Array.isArray(cartItems) || cartItems.length === 0) return res.status(400).json({ error: 'Cart is empty.' });
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -624,6 +637,9 @@ app.get('/api/products', async (req, res) => {
 // Registration
 app.post('/api/register', async (req, res) => {
   const { full_name, email, password, phone } = req.body;
+  if (!full_name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required.' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email format.' });
+  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const pool = await poolPromise;
@@ -640,8 +656,9 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
   try {
     const pool = await poolPromise;
     const result = await pool.request()

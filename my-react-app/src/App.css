@@ -1527,6 +1527,202 @@ footer,
   }
 }
 /* ==========================================================================
+   MOBILE RESPONSIVE (storefront)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+  /* ── Header: 2-row layout ── */
+  .maison-nav-container {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  /* Row 1 left: logo */
+  .maison-logo-svg-wrapper {
+    order: 1;
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  .maison-logo-svg-wrapper svg {
+    width: 160px !important;
+    height: 40px !important;
+  }
+
+  /* Row 1 right: bag + sign-in only */
+  .maison-right-menu {
+    order: 2;
+    flex: 0 0 auto;
+    gap: 14px;
+  }
+
+  /* Hide "The House" on mobile — too cramped */
+  .maison-right-menu > .maison-utility-btn:first-child {
+    display: none;
+  }
+
+  .maison-cart-wrapper-btn {
+    padding: 8px 14px;
+  }
+
+  /* Row 2: nav links spanning full width */
+  .maison-main-nav {
+    order: 3;
+    flex: 0 0 100%;
+    gap: 20px;
+    justify-content: center;
+    padding: 10px 0 12px;
+    border-top: 1px solid var(--border-muted);
+  }
+
+  .nav-link-premium {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+
+  /* ── Content area ── */
+  .maison-content-split {
+    padding: 32px 16px;
+  }
+
+  /* ── Product grid: 2 columns ── */
+  .maison-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 12px;
+  }
+
+  .maison-img-holder {
+    max-width: 100%;
+  }
+
+  .maison-card-title {
+    font-size: 13px;
+  }
+
+  .maison-card-subtitle {
+    font-size: 12px;
+  }
+
+  .maison-card-price {
+    font-size: 13px;
+  }
+
+  /* ── Cart drawer ── */
+  .drawer-header {
+    padding: 20px;
+  }
+
+  .drawer-body {
+    padding: 20px;
+  }
+
+  .drawer-footer {
+    padding: 20px;
+  }
+
+  /* ── Login / Register ── */
+  .maison-login-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 28px 20px;
+  }
+
+  /* ── Size guide spec panels ── */
+  .female-specs-panel,
+  .male-specs-panel {
+    width: 100%;
+    height: auto;
+  }
+
+  /* ── Configurator panel ── */
+  .maison-configurator-panel {
+    padding: 24px 20px 20px;
+    border-radius: 24px;
+  }
+
+  .maison-configurator-panel .config-product-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* ── Header ── */
+  .maison-nav-container {
+    padding: 10px 12px;
+  }
+
+  .maison-logo-svg-wrapper svg {
+    width: 140px !important;
+    height: 35px !important;
+  }
+
+  .maison-main-nav {
+    gap: 14px;
+  }
+
+  /* ── Content ── */
+  .maison-content-split {
+    padding: 24px 12px;
+  }
+
+  /* ── Product grid ── */
+  .maison-grid {
+    gap: 20px 8px;
+  }
+
+  .maison-card-title {
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  .maison-card-subtitle {
+    font-size: 11px;
+  }
+
+  .maison-card-price {
+    font-size: 12px;
+  }
+
+  /* ── Cart thumbnail: smaller on narrow phones ── */
+  .maison-summary-thumb {
+    width: 90px;
+    min-width: 90px;
+  }
+
+  /* ── Cart drawer ── */
+  .drawer-header {
+    padding: 16px;
+  }
+
+  .drawer-body {
+    padding: 16px;
+  }
+
+  .drawer-footer {
+    padding: 16px;
+  }
+
+  /* ── Login ── */
+  .maison-login-container {
+    padding: 24px 16px;
+    gap: 14px;
+  }
+
+  /* ── Configurator ── */
+  .maison-configurator-panel {
+    padding: 20px 16px 16px;
+    border-radius: 20px;
+  }
+
+  .maison-configurator-panel .config-product-title {
+    font-size: 20px;
+  }
+}
+
+/* ==========================================================================
    🔐 ADMIN PORTAL
    ========================================================================== */
 

@@ -27,19 +27,19 @@
 
 ### Storefront
 - **Product Catalog** — Dynamic product listing fetched from Azure SQL, with category filtering (Men/Women) and price sorting
-- **Bespoke Configurator** — Per-product configuration for sartorial cut, fabric color, and chest size
-- **Private Atelier Fitting** — Customers can select a complimentary fitting service; a concierge follows up within 24 hours
+- **Bespoke Configurator** — Per-product configuration for sartorial cut, fabric color, and chest size; color selection filters sizes to only show variants available in that color with accurate per-color stock counts; changing color auto-resets size to first valid option
+- **Private Atelier Fitting** — Customers can select a complimentary fitting service; a concierge follows up within 24 hours; Atelier Fitting does not decrement stock
 - **Cart System** — Sliding drawer cart with quantity controls and real-time total calculation
 - **Authentication** — Customer registration and login with bcrypt password hashing; session persists across Stripe redirect via `sessionStorage`
 - **Stripe Checkout** — Hosted payment page with shipping address, billing, and phone number collection
-- **Order Persistence** — Webhook-driven order and line-item storage into Azure SQL on payment completion
+- **Order Persistence** — Webhook-driven order and line-item storage into Azure SQL on payment completion; `ProductVariants.stock_quantity` is decremented automatically per purchased item
 
 ### Admin Portal
 Accessed at `/admin/login` — not linked anywhere on the storefront.
 
 - **Overview tab** — Revenue trend line chart and orders bar chart (last 30 days), all-time / monthly / daily stat cards, top-selling items chart and table, top-selling sizes by Men/Women
 - **Stock overview** — Filterable and sortable table of all inventory variants; filter by Men/Women, sort by stock/SKU/color/size/product, search by SKU
-- **Products tab** — Full product CRUD (add, edit, delete); product images shown uncropped; total stock badge per product; Stock modal to add or edit size/color/quantity variants directly from the UI
+- **Products tab** — Full product CRUD (add, edit, delete); product images shown uncropped; total stock badge per product; Stock modal to add, edit, or delete size/color/quantity variants directly from the UI (✕ button removes a variant permanently)
 - **Customers tab** — All purchasers ranked by spend with expandable order history and per-item line detail
 - **Atelier tab** — All customers who selected Private Atelier Fitting; shows name, email, phone, product, order date; admin can update status (Pending → Contacted → Scheduled → Completed) and add internal notes per request
 - **Session persistence** — Admin token stored in `localStorage`; survives page refresh without re-login
@@ -81,18 +81,20 @@ capstone/
 │   │   ├── main.tf                # ACR + AKS + Key Vault
 │   │   ├── variables.tf
 │   │   ├── outputs.tf
-│   │   └── terraform.tfvars.example
+│   │   └── terraform.tfvars.example  # copy → terraform.tfvars, fill secrets
 │   └── k8s/                       # Kubernetes manifests
 │       ├── namespace.yaml
 │       ├── secret-provider.yaml   # Key Vault CSI driver config
+│       ├── cluster-issuer.yaml    # cert-manager SelfSigned ClusterIssuer
 │       ├── api-deployment.yaml
 │       ├── api-service.yaml
 │       ├── frontend-deployment.yaml
 │       ├── frontend-service.yaml
-│       └── ingress.yaml
+│       └── ingress.yaml           # TLS + host routing (__APP_DOMAIN__ placeholder)
 │
 ├── azure-pipelines.yml            # CI/CD pipeline
 ├── docker-compose.yml             # Runs both services together locally
+├── .nvmrc                         # Pins Node 20
 ├── CLAUDE.md                      # Claude Code guidance
 └── README.md
 ```
@@ -196,8 +198,11 @@ cd my-react-app
 npm install
 npm run dev
 
-# Terminal 3 — Stripe webhook
+# Terminal 3 — Stripe webhook (local)
 stripe listen --forward-to localhost:5000/api/webhook
+
+# Terminal 3 — Stripe webhook (cloud, self-signed cert)
+stripe listen --skip-verify --forward-to https://maisonaura.southeastasia.cloudapp.azure.com/api/webhook
 ```
 
 Frontend: http://localhost:5173  
@@ -214,20 +219,12 @@ Admin: http://localhost/admin/login
 
 ### Environment Variables
 
-Create `my-api/.env`:
+Copy the example file and fill in your values:
+```bash
+cp my-api/.env.example my-api/.env
 ```
-STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
-DB_SERVER=your-server.database.windows.net
-DB_NAME=your-database
-DB_USER=your-username
-DB_PASSWORD=your-password
-ADMIN_EMAIL=admin@maisonaura.com
-ADMIN_PASSWORD=your-admin-password
-ADMIN_SECRET=your-admin-secret-key
-AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...
-AZURE_STORAGE_CONTAINER=products
-```
+
+All required variable names are documented in `my-api/.env.example`. The file is gitignored — never commit `.env`.
 
 ### Azure Blob Storage Setup (required for image uploads)
 
@@ -285,6 +282,17 @@ Navigate to `/admin/login` — there is no visible link on the storefront.
 
 ---
 
+## Stripe Webhook
+
+The self-signed TLS certificate is not trusted by Stripe's servers. When testing against the cloud deployment, always use `--skip-verify`:
+
+```bash
+stripe listen --skip-verify \
+  --forward-to https://maisonaura.southeastasia.cloudapp.azure.com/api/webhook
+```
+
+> For a production setup with real payments, replace the self-signed cert with Let's Encrypt or an Azure-managed certificate so Stripe can deliver webhooks without the CLI.
+
 ## Stripe Test Payment
 
 | Field | Value |
@@ -330,7 +338,7 @@ cd infra/terraform
 cp terraform.tfvars.example terraform.tfvars
 # Fill in all secret values in terraform.tfvars
 # node_vm_size must be Standard_D2s_v3 (B-series has zero quota in this subscription)
-# Set app_url to your public IP or domain, e.g. http://20.197.74.212
+# Set app_url to your HTTPS domain, e.g. https://maisonaura.southeastasia.cloudapp.azure.com
 
 terraform init
 terraform plan
@@ -339,7 +347,7 @@ terraform apply
 
 > **Notes:**
 > - The resource group `maisonaura-rg` is pre-existing (contains the SQL database) and is referenced as a Terraform `data` source — it will never be created or destroyed by Terraform. All new resources (ACR, AKS, Key Vault) deploy to `southeastasia`.
-> - `APP_URL` is required for Stripe to redirect back to the correct URL after payment. Set it to your public IP or custom domain.
+> - `APP_URL` is required for Stripe to redirect back to the correct URL after payment. Use the HTTPS Azure DNS domain (e.g. `https://maisonaura.southeastasia.cloudapp.azure.com`).
 > - If the public IP changes after a redeploy, update `app_url` in `terraform.tfvars` and re-run `terraform apply`.
 
 Save the outputs — you'll need them in later steps:
@@ -380,18 +388,31 @@ Connect kubectl to the cluster and apply all Kubernetes manifests.
 ```bash
 az aks get-credentials --resource-group maison-aura-rg --name maison-aura-aks
 
-# Install nginx Ingress Controller (first time only)
+# Install nginx Ingress Controller with Azure DNS label
+# DNS label gives you: maisonaura.southeastasia.cloudapp.azure.com
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set controller.replicaCount=1 \
+  --set "controller.service.annotations.service\.beta\.kubernetes\.io/azure-dns-label-name=maisonaura" \
+  --wait
+
+# Install cert-manager (manages TLS certificates automatically)
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager --create-namespace \
+  --set crds.enabled=true \
+  --wait
 
 # Substitute placeholders in manifests (replace values from terraform output)
-sed -i "s|__ACR_LOGIN_SERVER__|maisonauraacr.azurecr.io|g"  infra/k8s/*.yaml
-sed -i "s|__BUILD_ID__|latest|g"                             infra/k8s/*.yaml
-sed -i "s|__KEY_VAULT_NAME__|maisonaura-kv|g"                infra/k8s/*.yaml
-sed -i "s|__TENANT_ID__|<your-tenant-id>|g"                  infra/k8s/*.yaml
-sed -i "s|__KEYVAULT_CLIENT_ID__|<your-client-id>|g"         infra/k8s/*.yaml
+sed -i "s|__ACR_LOGIN_SERVER__|maisonauraacr.azurecr.io|g"                    infra/k8s/*.yaml
+sed -i "s|__BUILD_ID__|latest|g"                                               infra/k8s/*.yaml
+sed -i "s|__KEY_VAULT_NAME__|maisonaura-kv|g"                                  infra/k8s/*.yaml
+sed -i "s|__TENANT_ID__|<your-tenant-id>|g"                                    infra/k8s/*.yaml
+sed -i "s|__KEYVAULT_CLIENT_ID__|<your-client-id>|g"                           infra/k8s/*.yaml
+sed -i "s|__APP_DOMAIN__|maisonaura.southeastasia.cloudapp.azure.com|g"        infra/k8s/*.yaml
 
 # Apply manifests
 kubectl apply -f infra/k8s/namespace.yaml
@@ -400,12 +421,18 @@ kubectl apply -f infra/k8s/api-service.yaml
 kubectl apply -f infra/k8s/api-deployment.yaml
 kubectl apply -f infra/k8s/frontend-service.yaml
 kubectl apply -f infra/k8s/frontend-deployment.yaml
+kubectl apply -f infra/k8s/cluster-issuer.yaml
 kubectl apply -f infra/k8s/ingress.yaml
 
 # Check everything is running
 kubectl get pods -n maison-aura
-kubectl get ingress -n maison-aura   # shows the external IP
+kubectl get ingress -n maison-aura          # shows the external IP
+kubectl get certificate -n maison-aura      # shows TLS cert status (should be Ready=True)
 ```
+
+> **TLS note:** cert-manager uses a self-signed issuer — no external CA required, no port-80 challenge. Browsers will show a security warning (click Advanced → Proceed). The cert is stored in the `maison-aura-tls` Kubernetes Secret and renewed automatically.
+
+> **Required after every ingress-nginx install:** AKS cloud controller always creates an HTTPS health probe for port 443 which causes all HTTPS traffic to be silently dropped. Replace it with a TCP probe — see [Troubleshooting](#troubleshooting) for the exact commands.
 
 ### Step 6 — Azure DevOps Pipeline
 Automates build, scan, and deploy on every push to `main`. **Not configured by Terraform — requires manual setup.**
@@ -436,6 +463,8 @@ Automates build, scan, and deploy on every push to `main`. **Not configured by T
 | `KEY_VAULT_NAME` | `maisonaura-kv` |
 | `TENANT_ID` | from `terraform output tenant_id` |
 | `KEYVAULT_CLIENT_ID` | from `terraform output keyvault_client_id` |
+| `DNS_LABEL` | `maisonaura` (Azure public IP DNS label — must be unique per region) |
+| `APP_DOMAIN` | `maisonaura.southeastasia.cloudapp.azure.com` (used in ingress TLS and Stripe redirect) |
 
 #### 6c — Self-hosted Agent (required)
 Microsoft-hosted agents are not available on the free tier for new Azure DevOps organizations. A self-hosted agent on Linux/WSL2 is required.
@@ -462,9 +491,40 @@ pool:
 **Pipeline stages:**
 - **SecurityScan** — `npm audit` on both packages + Checkov on Terraform and K8s manifests (soft-fail)
 - **Build** — builds both Docker images, Trivy scans for HIGH/CRITICAL CVEs, pushes to ACR tagged with `$(Build.BuildId)`
-- **Deploy** — substitutes `__PLACEHOLDER__` values in K8s manifests, applies to AKS, waits for rollout, prints external IP
+- **Deploy** — installs ingress-nginx (with Azure DNS label) + cert-manager, substitutes `__PLACEHOLDER__` values in K8s manifests (including `__APP_DOMAIN__`), applies to AKS, waits for rollout, prints external IP
 
 > **Note:** Checkov is installed via `pip3 install checkov --break-system-packages` and called with `export PATH=$HOME/.local/bin:$PATH` on the self-hosted Linux agent. Trivy is also installed to `$HOME/.local/bin` to avoid requiring sudo.
+
+---
+
+## Security Hardening
+
+### API (`my-api/index.js`)
+
+| Measure | Package | Detail |
+|---|---|---|
+| Security headers | `helmet` | Sets X-Frame-Options, CSP, HSTS, X-Content-Type-Options and 8 others on every response |
+| Rate limiting | `express-rate-limit` | 10 requests per 15-min window on `POST /api/login` and `POST /api/admin/login` — blocks brute-force attacks |
+| Input validation | built-in | `POST /api/register` validates required fields, email format, and minimum 8-char password; login and checkout routes validate required fields before hitting the database |
+
+### Secrets
+
+- All secrets are stored in **Azure Key Vault** and mounted into pods via the CSI driver — no secrets in Docker images or environment files
+- `my-api/.env` is gitignored; `my-api/.env.example` provides a blank template for local setup
+- `infra/terraform/terraform.tfvars` is gitignored; `terraform.tfvars.example` provides the template
+
+### TLS
+
+- Self-signed certificate managed by **cert-manager** with a `SelfSigned` ClusterIssuer
+- No external CA required — cert is generated entirely within the cluster (no port-80 HTTP challenge)
+- Certificate stored as Kubernetes Secret `maison-aura-tls`, referenced by the nginx Ingress
+- Domain served over HTTPS: `https://maisonaura.southeastasia.cloudapp.azure.com`
+
+### CI/CD
+
+- **Trivy** scans both Docker images for HIGH/CRITICAL CVEs — hard-fail blocks deployment
+- **Checkov** scans Terraform and K8s manifests for IaC misconfigurations (soft-fail, results reported)
+- `npm audit` runs on frontend and backend dependencies each pipeline run
 
 ---
 
@@ -475,6 +535,43 @@ pool:
 ---
 
 ## Troubleshooting
+
+### HTTPS times out on port 443 (browser or curl hangs)
+
+**Root cause:** AKS cloud controller always creates an HTTPS health probe for port 443. The probe hits nginx without a `Host` header → nginx returns 404 → Azure LB marks all backends unhealthy → port 443 traffic is silently dropped even when NSG and ingress config are correct.
+
+**Fix — replace the HTTPS probe with a TCP probe:**
+```bash
+RG="MC_maisonaura-rg_maison-aura-aks_southeastasia"
+LB=$(az network lb list --resource-group $RG --query "[0].name" -o tsv)
+NODEPORT=$(kubectl get svc ingress-nginx-controller -n ingress-nginx \
+  -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
+RULE_NAME=$(az network lb rule list --resource-group $RG --lb-name $LB \
+  --query "[?frontendPort==\`443\`].name" -o tsv)
+
+# 1. Create TCP probe
+az network lb probe create --resource-group $RG --lb-name $LB \
+  --name "tcp-443-probe" --protocol Tcp --port $NODEPORT --interval 5 --threshold 2
+
+# 2. Point the LB rule at the new probe
+az network lb rule update --resource-group $RG --lb-name $LB \
+  --name "$RULE_NAME" --probe-name "tcp-443-probe"
+
+# 3. Delete the old HTTPS probe
+az network lb probe delete --resource-group $RG --lb-name $LB \
+  --name "$RULE_NAME"
+```
+
+> **Note:** Run this fix after every ingress-nginx reinstall. The cloud controller always reverts port 443 to an HTTPS probe on reconciliation.
+
+### Browser shows "certificate not valid" warning on HTTPS
+
+Expected — this is the self-signed certificate warning. The connection is encrypted; the browser just doesn't trust a self-signed CA. To proceed:
+- **Chrome/Edge:** click **Advanced** → **Proceed to maisonaura... (unsafe)**
+- **Firefox:** click **Advanced** → **Accept the Risk and Continue**
+- **Safari:** click **Show Details** → **visit this website**
+
+For production, replace the self-signed issuer with Let's Encrypt (requires a real trusted domain) or an Azure-managed certificate.
 
 ### API pod in CrashLoopBackOff — `Cannot find module './config'`
 `config.js` was previously in `.gitignore`. The pipeline checks code out from git, so the file was missing from the Docker build. Fix: `config.js` is now tracked in git (it contains no secrets — only reads from `process.env`).
@@ -522,15 +619,17 @@ When deploying to **Azure AKS**, the `proxy_pass` block in `nginx.conf` should b
 ## Azure Architecture
 
 ```
-Internet
+Browser (HTTPS)
     │
-    ▼
-AKS Ingress Controller
+    ▼  maisonaura.southeastasia.cloudapp.azure.com
+AKS Ingress Controller  ◄── TLS cert (cert-manager SelfSigned, Secret: maison-aura-tls)
     ├── /api/*  ──► backend Service ──► Node.js Pod ──► Azure SQL
     └── /*      ──► frontend Service ──► nginx Pod (React SPA)
                                               │
-                                         Azure Blob Storage
-                                         (product images)
+                                         Azure Blob Storage (product images)
+
+Secrets flow:
+  Azure Key Vault ──► CSI driver ──► k8s Secret ──► API pod env vars
 ```
 
 ---

@@ -22,3 +22,8 @@ output "keyvault_client_id" {
 output "tenant_id" {
   value = data.azurerm_client_config.current.tenant_id
 }
+
+output "node_resource_group" {
+  description = "AKS-managed resource group containing the LB, NSG, and node VMs — used for az network commands"
+  value       = azurerm_kubernetes_cluster.aks.node_resource_group
+}
