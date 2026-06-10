@@ -73,20 +73,39 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
           const cut         = parts[1]?.trim() || '';
           const size        = (parts[2] || '').replace('Size ', '').trim();
 
+          const qty = item.quantity || 1;
+
           await pool.request()
-            .input('sid',   sql.NVarChar,    session.id)
-            .input('pname', sql.NVarChar,    productName)
-            .input('color', sql.NVarChar,    color)
-            .input('cut',   sql.NVarChar,    cut)
-            .input('size',  sql.NVarChar,    size)
-            .input('qty',   sql.Int,         item.quantity || 1)
-            .input('price', sql.Decimal,     (item.price?.unit_amount || 0) / 100)
+            .input('sid',   sql.NVarChar, session.id)
+            .input('pname', sql.NVarChar, productName)
+            .input('color', sql.NVarChar, color)
+            .input('cut',   sql.NVarChar, cut)
+            .input('size',  sql.NVarChar, size)
+            .input('qty',   sql.Int,      qty)
+            .input('price', sql.Decimal,  (item.price?.unit_amount || 0) / 100)
             .query(`
               INSERT INTO OrderItems (stripe_session_id, product_name, color, cut, size, quantity, unit_price)
               VALUES (@sid, @pname, @color, @cut, @size, @qty, @price)
             `);
+
+          if (size && size !== 'Atelier Fitting') {
+            await pool.request()
+              .input('pname', sql.NVarChar, productName)
+              .input('color', sql.NVarChar, color)
+              .input('size',  sql.NVarChar, size)
+              .input('qty',   sql.Int,      qty)
+              .query(`
+                UPDATE pv
+                SET pv.stock_quantity = CASE WHEN pv.stock_quantity >= @qty THEN pv.stock_quantity - @qty ELSE 0 END
+                FROM ProductVariants pv
+                INNER JOIN Products p ON pv.product_id = p.product_id
+                WHERE (p.product_name = @pname OR p.display_name = @pname)
+                  AND pv.color = @color
+                  AND pv.size  = @size
+              `);
+          }
         }
-        console.log('Order items saved for session:', session.id);
+        console.log('Order items saved and stock decremented for session:', session.id);
       } catch (itemErr) {
         console.error('Failed to save order items:', itemErr.message);
       }
