@@ -55,7 +55,12 @@ const MaisonConfigurator = ({
           <div className="option-group">
             <label className="lux-label">Fabric Colorway</label>
             <div className="custom-select-wrapper">
-              <select value={fabricColor} onChange={(e) => setFabricColor(e.target.value)} className="lux-select">
+              <select value={fabricColor} onChange={(e) => {
+                  const newColor = e.target.value;
+                  setFabricColor(newColor);
+                  const firstSize = variants.find(v => v.color === newColor)?.size || '';
+                  setChestSize(firstSize);
+                }} className="lux-select">
                 {colorOptions.length > 0 ? (
                   colorOptions.map(color => (
                     <option key={color} value={color}>{color}</option>
