@@ -178,6 +178,8 @@ stages:
                     kubectl apply -f infra/k8s/api-deployment.yaml
                     kubectl apply -f infra/k8s/frontend-service.yaml
                     kubectl apply -f infra/k8s/frontend-deployment.yaml
+                    kubectl apply -f infra/k8s/api-hpa.yaml
+                    kubectl apply -f infra/k8s/frontend-hpa.yaml
                     kubectl apply -f infra/k8s/cluster-issuer.yaml
                     kubectl apply -f infra/k8s/ingress.yaml
                   displayName: Apply Kubernetes manifests

@@ -337,7 +337,8 @@ az login --tenant <your-tenant-id>
 cd infra/terraform
 cp terraform.tfvars.example terraform.tfvars
 # Fill in all secret values in terraform.tfvars
-# node_vm_size must be Standard_D2s_v3 (B-series has zero quota in this subscription)
+# node_vm_size is Standard_D2als_v7 (AMD, 4GB, zone 2 only — chosen for cost savings)
+# B-series has zero quota; A-series not available; D2als_v7 is the cheapest viable x86 option
 # Set app_url to your HTTPS domain, e.g. https://maisonaura.southeastasia.cloudapp.azure.com
 
 terraform init
@@ -525,6 +526,94 @@ pool:
 - **Trivy** scans both Docker images for HIGH/CRITICAL CVEs — hard-fail blocks deployment
 - **Checkov** scans Terraform and K8s manifests for IaC misconfigurations (soft-fail, results reported)
 - `npm audit` runs on frontend and backend dependencies each pipeline run
+
+---
+
+## Cost Optimization
+
+### Node VM Sizing
+
+The AKS node was downsized from `Standard_D2s_v3` to `Standard_D2als_v7` (AMD, 4 GB RAM, zone 2 only) — approximately 35% cheaper.
+
+**Always check actual usage before changing VM size:**
+
+```bash
+# Node-level usage
+kubectl top nodes
+
+# Pod-level usage per namespace
+kubectl top pods -n maison-aura
+kubectl top pods -n ingress-nginx
+kubectl top pods -n cert-manager
+```
+
+**Actual usage at time of change:**
+
+| Metric | Value | Node % |
+|---|---|---|
+| CPU | 349m | 18% |
+| Memory | 1912 Mi | 26% |
+
+Pod breakdown: API pods (×2) used 94 Mi, frontend pods (×2) used 6 Mi, ingress-nginx 48 Mi, cert-manager 65 Mi. The remaining ~1.7 GB is fixed Kubernetes system overhead — it does not scale with the app.
+
+**Why `Standard_D2als_v7`:**
+- B-series (burstable, ideal for low-traffic workloads) — quota=0, unavailable in this subscription
+- A-series — not available in Southeast Asia for this subscription
+- B_v2 series — ARM64 architecture, incompatible with x86 images built by the pipeline
+- `Standard_D2als_v7` — AMD EPYC, 2 vCPU, 4 GB, zone 2 only — cheapest viable x86 option with enough RAM above the 1.9 GB baseline
+
+**Terraform change required** — pinning to zone 2 (where this VM is available):
+```hcl
+default_node_pool {
+  name       = "default"
+  node_count = 1
+  vm_size    = "Standard_D2als_v7"
+  zones      = ["2"]
+}
+```
+
+> **Note:** Changing VM size forces a node pool replace (brief downtime). Always run `terraform plan` first to confirm the scope of changes. The azurerm provider requires `temporary_name_for_rotation` in the node pool block when changing `vm_size` or `zones` on an existing cluster — without it, Terraform errors out.
+
+### Horizontal Pod Autoscaler (HPA)
+
+HPA automatically scales pod replicas based on CPU utilization, keeping costs low at idle and handling traffic spikes without manual intervention.
+
+**Manifests:** `infra/k8s/api-hpa.yaml`, `infra/k8s/frontend-hpa.yaml`
+
+| Setting | API | Frontend |
+|---|---|---|
+| minReplicas | 1 | 1 |
+| maxReplicas | 2 | 2 |
+| CPU target | 70% | 70% |
+
+At idle (CPU well below 70%), HPA holds both deployments at 1 replica. Under load, it scales up to 2.
+
+**Resource requests right-sized to actual usage:**
+
+| Pod | CPU request | CPU limit | Memory request | Memory limit |
+|---|---|---|---|---|
+| API | 20m | 200m | 64Mi | 128Mi |
+| Frontend | 10m | 100m | 8Mi | 32Mi |
+
+Requests are set ~10× actual measured usage to give a safe burst buffer while freeing reserved capacity on the node. HPA calculates utilization as `actual / request` — oversized requests make the percentages artificially low and delay scale-up.
+
+**Final state after all cost optimisations:**
+
+| Metric | Before | After |
+|---|---|---|
+| VM size | Standard_D2s_v3 (8GB) | Standard_D2als_v7 (4GB) |
+| CPU usage | 349m (18%) | 68m (3%) |
+| Memory usage | 1912Mi (26% of 8GB) | 1851Mi (58% of 4GB) |
+| App pod count | 4 (hardcoded) | 2 at idle, up to 4 under load |
+
+**Check HPA status:**
+```bash
+kubectl get hpa -n maison-aura
+kubectl top nodes
+kubectl top pods -n maison-aura
+```
+
+> **Gotcha:** Never run `kubectl apply -f infra/k8s/*.yaml` directly — the manifests contain `__ACR_LOGIN_SERVER__` and `__BUILD_ID__` placeholders that only get substituted by the pipeline's `sed` commands. Use `kubectl set resources` for live resource patching, or trigger the pipeline for a full redeploy.
 
 ---
 

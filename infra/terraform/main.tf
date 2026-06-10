@@ -55,9 +55,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = var.aks_cluster_name
 
   default_node_pool {
-    name       = "default"
-    node_count = var.node_count
-    vm_size    = var.node_vm_size
+    name                        = "default"
+    node_count                  = var.node_count
+    vm_size                     = var.node_vm_size
+    zones                       = ["2"]
+    temporary_name_for_rotation = "tmpdefault"
   }
 
   oidc_issuer_enabled = true

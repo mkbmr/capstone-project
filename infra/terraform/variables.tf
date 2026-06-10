@@ -25,7 +25,7 @@ variable "node_count" {
 }
 
 variable "node_vm_size" {
-  default = "Standard_D2s_v3"
+  default = "Standard_D2als_v7"
 }
 
 variable "stripe_secret_key" {
