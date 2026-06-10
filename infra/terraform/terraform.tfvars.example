@@ -1,0 +1,33 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit secrets.
+
+# Azure infrastructure names (change only if the defaults in variables.tf conflict)
+# resource_group_name = "maison-aura-rg"
+# acr_name            = "maisonauraacr"          # must be globally unique, alphanumeric only
+# aks_cluster_name    = "maison-aura-aks"
+# key_vault_name      = "maisonaura-kv"           # must be globally unique, 3-24 chars
+# location            = "southeastasia"
+# node_count          = 1
+# node_vm_size        = "Standard_D2s_v3"
+
+# Stripe
+stripe_secret_key     = "sk_test_..."
+stripe_webhook_secret = "whsec_..."
+
+# Azure SQL
+db_server   = "yourserver.database.windows.net"
+db_name     = "yourdatabase"
+db_user     = "yourusername"
+db_password = ""
+
+# Admin portal
+admin_email    = "admin@yourdomain.com"
+admin_password = ""
+admin_secret   = ""
+
+# Azure Blob Storage
+azure_storage_connection_string = "DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net"
+azure_storage_container         = "product-images"
+
+# Public app URL (used for Stripe success/cancel redirect)
+app_url = "https://yourdomain.com"
