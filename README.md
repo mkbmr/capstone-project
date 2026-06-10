@@ -437,15 +437,77 @@ Automates build, scan, and deploy on every push to `main`. **Not configured by T
 | `TENANT_ID` | from `terraform output tenant_id` |
 | `KEYVAULT_CLIENT_ID` | from `terraform output keyvault_client_id` |
 
-#### 6c — Create the Pipeline
+#### 6c — Self-hosted Agent (required)
+Microsoft-hosted agents are not available on the free tier for new Azure DevOps organizations. A self-hosted agent on Linux/WSL2 is required.
+
+**Register the agent:**
+1. **Organization Settings** → **Agent pools** → **New pool** → name it (e.g. `Bazooka-Desktop`)
+2. Inside the pool → **New agent** → follow the Linux download + config steps
+3. Run `./run.sh` to start the agent (or install as a service with `./svc.sh install && ./svc.sh start`)
+4. Verify it shows **Online** in the pool's Agents tab
+
+Update `azure-pipelines.yml` pool to match your agent pool name:
+```yaml
+pool:
+  name: Bazooka-Desktop   # replace with your pool name
+```
+
+> **Alternative:** Submit a free parallel job grant request at https://aka.ms/azpipelines-parallelism-request (2–3 business day wait) to use Microsoft-hosted `ubuntu-latest` instead.
+
+#### 6d — Create the Pipeline
 1. **Pipelines** → **New Pipeline** → **Azure Repos Git** → select this repo
 2. Select **Existing Azure Pipelines YAML file**
-3. Path: `/azure-pipelines.yml` → **Continue** → **Run**
+3. Branch: `main`, Path: `/azure-pipelines.yml` → **Continue** → **Run**
 
 **Pipeline stages:**
-- **SecurityScan** — `npm audit` on both packages + Checkov on Terraform and K8s manifests
+- **SecurityScan** — `npm audit` on both packages + Checkov on Terraform and K8s manifests (soft-fail)
 - **Build** — builds both Docker images, Trivy scans for HIGH/CRITICAL CVEs, pushes to ACR tagged with `$(Build.BuildId)`
 - **Deploy** — substitutes `__PLACEHOLDER__` values in K8s manifests, applies to AKS, waits for rollout, prints external IP
+
+> **Note:** Checkov is installed via `pip3 install checkov --break-system-packages` and called with `export PATH=$HOME/.local/bin:$PATH` on the self-hosted Linux agent. Trivy is also installed to `$HOME/.local/bin` to avoid requiring sudo.
+
+---
+
+## Security Notes
+
+- **CVE-2026-6732 (libxml2)** — patched in `my-react-app/Dockerfile` via `RUN apk upgrade --no-cache` in the nginx stage. This upgrades `libxml2` from `2.13.9-r0` to `2.13.9-r1` at build time, resolving the HIGH severity DoS vulnerability detected by Trivy.
+
+---
+
+## Troubleshooting
+
+### API pod in CrashLoopBackOff — `Cannot find module './config'`
+`config.js` was previously in `.gitignore`. The pipeline checks code out from git, so the file was missing from the Docker build. Fix: `config.js` is now tracked in git (it contains no secrets — only reads from `process.env`).
+
+### Configurator shows no sizes/colors (`404 /api/products/:id/variants`)
+Old pods built before the public variants route was added continued running after a failed rollout. Root cause was a missing `APP-URL` secret in Key Vault, which prevented new pods from mounting secrets and starting.
+
+**Fix:**
+1. Add the missing secret to Key Vault:
+   ```bash
+   az keyvault secret set --vault-name maisonaura-kv --name APP-URL --value "http://<your-ip-or-domain>"
+   ```
+2. If Terraform already manages this secret and conflicts, import it:
+   ```bash
+   terraform import 'azurerm_key_vault_secret.secrets["APP-URL"]' "<secret-resource-id>"
+   terraform apply
+   ```
+3. Restart the API deployment to pick up the new secret:
+   ```bash
+   kubectl rollout restart deployment/maison-aura-api -n maison-aura
+   kubectl rollout status deployment/maison-aura-api -n maison-aura
+   ```
+
+### Pods stuck on old image after pipeline deploy
+Check which image each pod is running:
+```bash
+kubectl get pods -n maison-aura -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[0].image}{"\n"}{end}'
+```
+If old pods remain, force a restart:
+```bash
+kubectl rollout restart deployment/maison-aura-api -n maison-aura
+kubectl rollout restart deployment/maison-aura-frontend -n maison-aura
+```
 
 ---
 

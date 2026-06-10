@@ -5,7 +5,6 @@ const sql = require('mssql');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const { BlobServiceClient } = require('@azure/storage-blob');
-const config = require('./config');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -105,7 +104,14 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize SQL Connection Pool
-const poolPromise = new sql.ConnectionPool(config)
+const poolPromise = new sql.ConnectionPool({
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
+  port: 1433,
+  options: { encrypt: true, trustServerCertificate: false }
+})
   .connect()
   .then(pool => {
     console.log('Connected to SQL Server');

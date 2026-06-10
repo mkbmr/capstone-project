@@ -12,7 +12,6 @@ node_modules/
 .env
 .env.local
 .env.*.local
-config.js
 config.json
 
 # --- Claude Code ---
