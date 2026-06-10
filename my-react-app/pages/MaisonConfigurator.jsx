@@ -17,10 +17,12 @@ const MaisonConfigurator = ({
   const colorOptions = [...new Set(variants.map(v => v.color).filter(Boolean))];
 
   const sizeMap = {};
-  variants.forEach(v => {
-    if (!v.size) return;
-    sizeMap[v.size] = (sizeMap[v.size] || 0) + v.stock_quantity;
-  });
+  variants
+    .filter(v => !fabricColor || v.color === fabricColor)
+    .forEach(v => {
+      if (!v.size) return;
+      sizeMap[v.size] = (sizeMap[v.size] || 0) + v.stock_quantity;
+    });
   const sizeOptions = Object.entries(sizeMap);
 
   return (

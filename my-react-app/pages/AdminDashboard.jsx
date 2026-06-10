@@ -553,6 +553,12 @@ function ProductsTab({ token }) {
     setNewVariants([]);
   };
 
+  const deleteVariant = async (variantId) => {
+    await fetch(`${API}/api/admin/variants/${variantId}`, { method: 'DELETE', headers: authHeaders });
+    setStockModal(prev => ({ ...prev, variants: prev.variants.filter(v => v.variant_id !== variantId) }));
+    setVariantEdits(prev => { const e = { ...prev }; delete e[variantId]; return e; });
+  };
+
   const addNewVariantRow = () => {
     setNewVariants(prev => [...prev, { size: '', color: '', stock_quantity: 0 }]);
   };
@@ -806,7 +812,9 @@ function ProductsTab({ token }) {
                           onChange={e => setVariantEdits(prev => ({ ...prev, [v.variant_id]: parseInt(e.target.value) || 0 }))}
                         />
                       </td>
-                      <td />
+                      <td>
+                        <button className="admin-btn-sm danger" onClick={() => deleteVariant(v.variant_id)}>✕</button>
+                      </td>
                     </tr>
                   ))}
                   {newVariants.map((row, idx) => (

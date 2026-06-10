@@ -324,6 +324,18 @@ app.put('/api/admin/variants/:variantId', requireAdmin, async (req, res) => {
   }
 });
 
+app.delete('/api/admin/variants/:variantId', requireAdmin, async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    await pool.request()
+      .input('id', sql.Int, parseInt(req.params.variantId))
+      .query('DELETE FROM ProductVariants WHERE variant_id = @id');
+    res.json({ message: 'Variant deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Admin: Sales Summary ─────────────────────────────────────────────────────
 app.get('/api/admin/sales/summary', requireAdmin, async (req, res) => {
   try {
