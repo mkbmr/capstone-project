@@ -68,6 +68,7 @@ capstone/
 │   │   └── CheckoutSuccess.jsx
 │   ├── Dockerfile                 # Multi-stage: Node build → nginx serve
 │   ├── nginx.conf                 # SPA fallback + /api/ proxy (Docker only)
+│   ├── nginx.aks.conf             # SPA fallback only (AKS — Ingress handles /api/)
 │   └── vite.config.js
 │
 ├── my-api/                        # Node.js + Express backend
@@ -87,12 +88,16 @@ capstone/
 │       ├── secret-provider.yaml   # Key Vault CSI driver config
 │       ├── cluster-issuer.yaml    # cert-manager SelfSigned ClusterIssuer
 │       ├── api-deployment.yaml
+│       ├── api-hpa.yaml           # HPA: API pods min=1 max=2 CPU 70%
 │       ├── api-service.yaml
 │       ├── frontend-deployment.yaml
+│       ├── frontend-hpa.yaml      # HPA: frontend pods min=1 max=2 CPU 70%
 │       ├── frontend-service.yaml
 │       └── ingress.yaml           # TLS + host routing (__APP_DOMAIN__ placeholder)
 │
-├── azure-pipelines.yml            # CI/CD pipeline
+├── azure-pipelines.yml            # CI/CD pipeline (skips on .md changes)
+├── azure-pipelines-start.yml      # Scheduled: start AKS at 9am SGT Mon-Fri
+├── azure-pipelines-stop.yml       # Scheduled: stop AKS at 5pm SGT Mon-Fri
 ├── docker-compose.yml             # Runs both services together locally
 ├── .nvmrc                         # Pins Node 20
 └── README.md
@@ -326,6 +331,30 @@ kubectl get pods -n maison-aura
 ```
 
 > **Note:** Storage and AKS management costs still apply while stopped, but VM compute (the largest cost) is paused.
+
+### Automated Start/Stop Schedule (9am–5pm SGT, Mon–Fri)
+
+Two scheduled pipelines handle this automatically — no manual intervention needed after setup.
+
+| Pipeline file | Schedule | Action |
+|---|---|---|
+| `azure-pipelines-start.yml` | 9:00 AM SGT (1:00 AM UTC) Mon–Fri | Starts the cluster |
+| `azure-pipelines-stop.yml` | 5:00 PM SGT (9:00 AM UTC) Mon–Fri | Stops the cluster |
+
+**One-time setup:**
+1. Push both files to `main`
+2. In Azure DevOps → **Pipelines** → **New Pipeline** → **Azure Repos Git** → select repo → **Existing Azure Pipelines YAML file**
+3. Register `azure-pipelines-start.yml` — name it `AKS Start - 9am SGT` → **Save** (not Run)
+4. Repeat for `azure-pipelines-stop.yml` — name it `AKS Stop - 5pm SGT` → **Save**
+
+Once saved, the cron schedule takes over automatically. You never need to press Run.
+
+**If the cluster is paused and you need it up immediately** (outside schedule hours):
+```bash
+az aks start --name maison-aura-aks --resource-group maisonaura-rg
+```
+
+> **Requirement:** Bazooka-Desktop must be **on** and the agent must show **Online** in Azure DevOps → Agent pools at the scheduled times. If the machine is off, the job is skipped and the cluster stays in its current state.
 
 ---
 
