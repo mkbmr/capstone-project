@@ -71,13 +71,13 @@ stages:
               inlineScript: az acr login --name $(ACR_NAME)
 
           - script: |
-              docker build \
+              docker build --no-cache \
                 -t $(ACR_LOGIN_SERVER)/maison-aura-api:$(imageTag) \
                 ./my-api
             displayName: Build API image
 
           - script: |
-              docker build \
+              docker build --no-cache \
                 --build-arg NGINX_CONF=nginx.aks.conf \
                 -t $(ACR_LOGIN_SERVER)/maison-aura-frontend:$(imageTag) \
                 ./my-react-app
