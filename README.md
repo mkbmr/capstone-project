@@ -95,7 +95,6 @@ capstone/
 ├── azure-pipelines.yml            # CI/CD pipeline
 ├── docker-compose.yml             # Runs both services together locally
 ├── .nvmrc                         # Pins Node 20
-├── CLAUDE.md                      # Claude Code guidance
 └── README.md
 ```
 
@@ -205,8 +204,10 @@ stripe listen --forward-to localhost:5000/api/webhook
 stripe listen --skip-verify --forward-to https://maisonaura.southeastasia.cloudapp.azure.com/api/webhook
 ```
 
-Frontend: http://localhost:5173  
-Admin: http://localhost:5173/admin/login
+| | Local | Production |
+|---|---|---|
+| Frontend | http://localhost:5173 | https://maisonaura.southeastasia.cloudapp.azure.com |
+| Admin | http://localhost:5173/admin/login | https://maisonaura.southeastasia.cloudapp.azure.com/admin/login |
 
 ### Option B — Docker Compose (test containers before cloud deploy)
 
@@ -214,8 +215,10 @@ Admin: http://localhost:5173/admin/login
 docker compose up --build
 ```
 
-Frontend: http://localhost  
-Admin: http://localhost/admin/login
+| | Local | Production |
+|---|---|---|
+| Frontend | http://localhost | https://maisonaura.southeastasia.cloudapp.azure.com |
+| Admin | http://localhost/admin/login | https://maisonaura.southeastasia.cloudapp.azure.com/admin/login |
 
 ### Environment Variables
 
@@ -301,6 +304,28 @@ stripe listen --skip-verify \
 | Expiry | Any future date |
 | CVC | Any 3 digits |
 | Address | Any valid address |
+
+---
+
+## AKS Cluster Management (Cost Saving)
+
+When not in use, stop the AKS cluster to deallocate the VM and pause compute billing.
+
+```bash
+# Stop cluster (deallocates VM — no compute charges while stopped)
+az aks stop --name maison-aura-aks --resource-group maisonaura-rg
+
+# Start cluster again
+az aks start --name maison-aura-aks --resource-group maisonaura-rg
+```
+
+After starting, wait ~5 minutes for pods to come back up, then verify:
+
+```bash
+kubectl get pods -n maison-aura
+```
+
+> **Note:** Storage and AKS management costs still apply while stopped, but VM compute (the largest cost) is paused.
 
 ---
 
@@ -484,6 +509,33 @@ pool:
 
 > **Alternative:** Submit a free parallel job grant request at https://aka.ms/azpipelines-parallelism-request (2–3 business day wait) to use Microsoft-hosted `ubuntu-latest` instead.
 
+#### 6c.1 — Docker Hub PAT (required on self-hosted agent)
+
+The pipeline pulls base images (`node:20-alpine`, `nginx:alpine`) from Docker Hub. Without auth, Docker Hub rate-limits unauthenticated pulls to 100/6h per IP. A stored PAT avoids this — but **PATs expire** and must be renewed when they do.
+
+**Create a PAT:**
+1. Log in to [hub.docker.com](https://hub.docker.com)
+2. Top right → username → **Account Settings** → **Personal access tokens**
+3. **Generate new token** — name it `bazooka-desktop`, permissions: **Read-only**
+4. Copy the token
+
+**Save it on Bazooka-Desktop:**
+```bash
+docker login -u <your-dockerhub-username>
+# paste the token when prompted for password
+```
+
+**If the pipeline fails with `401 Unauthorized: personal access token is expired`:**
+```bash
+# Clear the expired token
+docker logout
+
+# Re-login with a new token (follow steps above first)
+docker login -u <your-dockerhub-username>
+```
+
+> The credential is stored in `~/.docker/config.json` on the agent machine. The pipeline has no Docker Hub variable — it uses whatever is stored on the host automatically.
+
 #### 6d — Create the Pipeline
 1. **Pipelines** → **New Pipeline** → **Azure Repos Git** → select this repo
 2. Select **Existing Azure Pipelines YAML file**
@@ -620,6 +672,7 @@ kubectl top pods -n maison-aura
 ## Security Notes
 
 - **CVE-2026-6732 (libxml2)** — patched in `my-react-app/Dockerfile` via `RUN apk upgrade --no-cache` in the nginx stage. This upgrades `libxml2` from `2.13.9-r0` to `2.13.9-r1` at build time, resolving the HIGH severity DoS vulnerability detected by Trivy.
+- **CVE-2026-45447 (OpenSSL)** — Heap Use-After-Free in `PKCS7_verify()` affecting `libcrypto3` and `libssl3`. Fixed by the same `RUN apk upgrade --no-cache` in the nginx stage, upgrading OpenSSL from `3.5.6-r0` to `3.5.7-r0`.
 
 ---
 
@@ -724,9 +777,6 @@ Secrets flow:
 ---
 
 ## Author
-
-**Khalis**
-- GitHub: [@mkbmr](https://github.com/mkbmr)
 
 ---
 
