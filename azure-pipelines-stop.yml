@@ -1,0 +1,30 @@
+schedules:
+  - cron: "0 9 * * 1-5"
+    displayName: Stop AKS cluster at 5pm SGT Mon-Fri
+    branches:
+      include: [ main ]
+    always: true
+
+trigger: none
+
+variables:
+  - group: maison-aura-vars
+
+pool:
+  name: Bazooka-Desktop
+
+jobs:
+  - job: StopCluster
+    displayName: Stop AKS cluster
+    steps:
+      - task: AzureCLI@2
+        displayName: Stop AKS
+        inputs:
+          azureSubscription: $(AZURE_SERVICE_CONNECTION)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az aks stop \
+              --name $(AKS_CLUSTER_NAME) \
+              --resource-group $(AKS_RESOURCE_GROUP)
+            echo "AKS cluster stopped successfully"
